@@ -1,4 +1,4 @@
-import LinkButton from "./_components/button";
+import LinkButton from "./_components/link-button";
 
 export default function MainBanner() {
   return (
