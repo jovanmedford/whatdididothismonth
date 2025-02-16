@@ -6,15 +6,13 @@
   --color-primary-500: var(--color-deep-blue-500)
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
     margin: 0;
     font-family: josefin-sans, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  }
-  
-  main {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
   }
   
   ul {
