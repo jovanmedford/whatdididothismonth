@@ -1,0 +1,18 @@
+.btn {
+    transition: filter 0.1s ease-in;
+    cursor: pointer;
+}
+
+.btn:hover {
+    filter: brightness(93%);
+}
+
+.btn-default {
+    background-color: var(--color-neutral);
+    color: var(--color-primary-500);
+}
+
+.btn-emphasized {
+    background-color: var(--color-primary-500);
+    color: white;
+}

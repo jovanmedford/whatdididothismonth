@@ -1,9 +1,16 @@
 @import "tailwindcss";
 
+:root {
+  --color-neutral: #f0f0f0;
+  --color-neutral-hover: #dfdfdf
+}
+
+
 @theme {
   --color-beige-500: #F8E6DD;
   --color-deep-blue-500: #355070;
-  --color-primary-500: var(--color-deep-blue-500)
+  --color-primary-500: var(--color-deep-blue-500);
+  --color-neutral: #f0f0f0;
 }
 
 * {
