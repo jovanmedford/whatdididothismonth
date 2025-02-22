@@ -18,7 +18,7 @@ const DateSquares = ({ activityId = "activity" }: { activityId: string }) => {
     <div className="flex gap-4 w-40 m-auto md:w-full md:flex-wrap overflow-auto">
       {indices.map((index) => (
         <label
-          key={`${activityId}-index`}
+          key={`${activityId}-${index}`}
           className="checkbox-parent flex justify-center w-6"
         >
           {index}
