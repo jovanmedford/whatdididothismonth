@@ -6,6 +6,7 @@ import { confirmSignIn, signIn } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import { Controller, useForm } from "react-hook-form";
+import Image from "next/image";
 
 Amplify.configure(outputs);
 
@@ -32,18 +33,24 @@ export default function Login() {
     }
   }
 
-    let {
-      handleSubmit,
-      formState: { errors },
-      control,
-    } = useForm();
+  let {
+    handleSubmit,
+    formState: { errors },
+    control,
+  } = useForm();
 
   return (
     <main className="flex h-screen">
-      <section className="hidden md:flex w-1/2 flex-col justify-center">
-        <p className="text-center"> Nice Picture</p>
+      <section className="relative hidden md:flex w-2/5 flex-col justify-center">
+        <Image
+          src={
+            "https://whatdididothismonth-imgs.s3.us-east-1.amazonaws.com/hands-up.webp"
+          }
+          fill={true}
+          alt="Man walking scenic route with hands in the air"
+        />
       </section>
-      <section className="w-full md:w-1/2 flex flex-col justify-center mx-8 -mt-6">
+      <section className="w-full md:w-3/5 flex flex-col justify-center mx-8 -mt-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-deep-blue-500">
             {" "}
@@ -51,7 +58,10 @@ export default function Login() {
           </h1>
           <p> Let's see how this month is going shall we?</p>
         </div>
-        <form className="flex flex-col max-w-sm" onSubmit={handleSubmit(onSubmit)}>
+        <form
+          className="flex flex-col max-w-sm"
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <Controller
             name="email"
             control={control}
