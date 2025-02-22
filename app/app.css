@@ -1,27 +1,45 @@
 @import "tailwindcss";
 
+:root {
+  --color-neutral: #f0f0f0;
+  --color-neutral-hover: #dfdfdf;
+  --color-secondary: var(--color-peach-100);
+}
+
 @theme {
-  --color-beige-500: #F8E6DD;
+  --color-beige-500: #f8e6dd;
   --color-deep-blue-500: #355070;
-  --color-primary-500: var(--color-deep-blue-500)
+  --color-primary-500: var(--color-deep-blue-500);
+  --color-neutral: #f0f0f0;
+  --color-peach-100: #f8e6dd;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    font-family: josefin-sans, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  }
-  
-  main {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  ul {
-    padding-inline-start: 0;
-    margin-block-start: 0;
-    margin-block-end: 0;
-    list-style-type: none;
-    display: flex;
-    margin: 8px 0;
-  }
+  margin: 0;
+  font-family: josefin-sans, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+ul {
+  padding-inline-start: 0;
+  margin-block-start: 0;
+  margin-block-end: 0;
+  list-style-type: none;
+  display: flex;
+  margin: 8px 0;
+}
+
+/* Hide default radio & checkbox */
+input[type="radio"], input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  margin: 0;
+}
+
+.radio-parent:focus-within, .checkbox-parent:focus-within {
+  outline: 1px solid;
+}
