@@ -56,6 +56,16 @@ const MonthSelector = () => {
   );
 };
 
+const ActivityManager = () => {
+  return (
+    <main className="px-2 md:px-10">
+      <YearSelector />
+      <MonthSelector />
+      <ActivityTable />
+    </main>
+  );
+};
+
 /**
  * Main app landing page - shows consistency chart for each activity that month
  */
@@ -64,11 +74,7 @@ export default function Page() {
     <>
       <body>
         <AppHeader />
-        <main className="px-2 md:px-10">
-          <YearSelector />
-          <MonthSelector />
-          <ActivityTable />
-        </main>
+        <ActivityManager />
       </body>
     </>
   );
