@@ -4,14 +4,27 @@
   --color-neutral: #f0f0f0;
   --color-neutral-hover: #dfdfdf;
   --color-secondary: var(--color-peach-100);
+  --color-deep-blue-900: #1c2a3b;
+  --color-deep-blue-700: #355070;
+  --color-deep-blue-500: #4f79ab;
+  --color-deep-blue-300: #88ccf1;
+  --color-deep-blue-100: #dbeffb;
 }
 
-@theme {
+@theme static {
   --color-beige-500: #f8e6dd;
   --color-deep-blue-500: #355070;
+  --color-primary-900: var(--color-deep-blue-900);
+  --color-primary-700: var(--color-deep-blue-700);
   --color-primary-500: var(--color-deep-blue-500);
+  --color-primary-300: var(--color-deep-blue-300);
+  --color-primary-100: var(--color-deep-blue-100);
   --color-neutral: #f0f0f0;
   --color-peach-100: #f8e6dd;
+  --color-success: #007a49;
+  --color-success-light: #d6ffef;
+  --color-error: #9b466d;
+  --color-error-light: #ffe3f0;
 }
 
 * {
@@ -33,13 +46,15 @@ ul {
 }
 
 /* Hide default radio & checkbox */
-input[type="radio"], input[type="checkbox"] {
+input[type="radio"],
+input[type="checkbox"] {
   -webkit-appearance: none;
   appearance: none;
   background-color: #fff;
   margin: 0;
 }
 
-.radio-parent:focus-within, .checkbox-parent:focus-within {
+.radio-parent:focus-within,
+.checkbox-parent:focus-within {
   outline: 1px solid;
 }
