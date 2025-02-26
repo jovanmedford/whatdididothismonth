@@ -3,14 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import activities from "../../../mocks/activities.json";
 import { ActivityItem } from "@/app/_types/types";
-
-const generateArray = (start: number, end: number) => {
-  let arr = [];
-  for (let i = start; i < end; i++) {
-    arr.push(i + 1);
-  }
-  return arr;
-};
+import { generateArray } from "@/app/utils";
 
 const DateSquares = ({ activityId = "activity" }: { activityId: string }) => {
   let indices = generateArray(0, 31);
@@ -52,8 +45,6 @@ export default function ActivityTable() {
       return activities;
     },
   });
-
-  
 
   if (status === "pending") {
     return <span>Loading...</span>;
