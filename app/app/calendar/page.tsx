@@ -91,10 +91,8 @@ const ActivityManager = () => {
 export default function Page() {
   return (
     <>
-      <body>
         <AppHeader />
         <ActivityManager />
-      </body>
     </>
   );
 }
