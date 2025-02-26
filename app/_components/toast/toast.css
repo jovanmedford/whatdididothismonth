@@ -1,0 +1,28 @@
+/* "error" | "information" | "success" */
+
+.toast--information {
+  background-color: var(--color-neutral);
+}
+
+.toast_header--information {
+  background-color: var(--color-primary-900);
+  color: white;
+}
+
+.toast--success {
+  background-color: var(--color-success-light);
+}
+
+.toast_header--success {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.toast--error {
+  background-color: var(--color-error-light);
+}
+
+.toast_header--error {
+  background-color: var(--color-error);
+  color: white
+}

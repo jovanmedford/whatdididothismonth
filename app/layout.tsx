@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Josefin_Sans } from "next/font/google";
 import "./app.css";
+import { ToastContainer } from "./_components/toast/toast";
 
 const josefin = Josefin_Sans({ subsets: ["latin"] });
 
@@ -16,7 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={josefin.className}>{children}</body>
+      <body className={josefin.className}>
+        {children}
+        <ToastContainer />
+      </body>
     </html>
   );
 }
