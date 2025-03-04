@@ -58,3 +58,11 @@ input[type="checkbox"] {
 .checkbox-parent:focus-within {
   outline: 1px solid;
 }
+
+.checkbox-parent {
+  cursor: pointer;
+}
+
+.checkbox-parent:has(input:checked) {
+  background-color: var(--color-peach-100);
+}

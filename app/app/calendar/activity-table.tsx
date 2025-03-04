@@ -5,8 +5,9 @@ import activities from "../../../mocks/activities.json";
 import { ActivityItem } from "@/app/_types/types";
 import { generateArray } from "@/app/utils";
 
-const DateSquares = ({ activityId = "activity" }: { activityId: string }) => {
+const DateSquares = ({ activityId = "activity", successes = [] }: { activityId: string, successes: number[] }) => {
   let indices = generateArray(0, 31);
+  let successSet = new Set(successes)
   return (
     <div className="flex gap-4 w-40 m-auto md:w-full md:flex-wrap overflow-auto">
       {indices.map((index) => (
@@ -15,7 +16,7 @@ const DateSquares = ({ activityId = "activity" }: { activityId: string }) => {
           className="checkbox-parent flex justify-center w-6"
         >
           {index}
-          <input type="checkbox" name={activityId}></input>
+          <input checked={successSet.has(index)} type="checkbox" name={activityId}></input>
         </label>
       ))}
     </div>
@@ -32,7 +33,7 @@ const Row = ({ activityItem }: { activityItem: ActivityItem }) => {
         </span>
       </th>
       <td className="w-6/12 md:w-8/12 overflow-x-auto">
-        <DateSquares activityId={activityItem.activity.id} />
+        <DateSquares activityId={activityItem.activity.id} successes={activityItem.progress.successes} />
       </td>
     </tr>
   );
@@ -47,7 +48,7 @@ export default function ActivityTable() {
   });
 
   if (status === "pending") {
-    return <span>Loading...</span>;
+    return null;
   }
 
   if (status === "error") {
