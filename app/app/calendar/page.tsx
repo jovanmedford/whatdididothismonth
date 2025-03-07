@@ -5,6 +5,16 @@ import AppHeader from "../app-header";
 import ActivityTable from "./activity-table";
 import { months } from "./data";
 import { FilterContext, Filters, useFilterContext } from "./filter-context";
+import TextInput from "@/app/_components/form/text-input";
+import Button from "@/app/_components/button/button";
+import { Controller, useForm } from "react-hook-form";
+import type { Schema } from "../amplify/data/resource";
+import { generateClient } from "aws-amplify/data";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getCurrentUser } from "aws-amplify/auth";
+import { showNotification } from "@/app/_components/toast/toast";
+
+const client = generateClient<Schema>();
 
 const getYears = (): number[] => {
   let thisYear = new Date().getFullYear();
@@ -24,7 +34,12 @@ const YearSelector = () => {
   }
 
   return (
-    <select onChange={handleChange} name="year" aria-label="Choose the year." value={filters.year}>
+    <select
+      onChange={handleChange}
+      name="year"
+      aria-label="Choose the year."
+      value={filters.year}
+    >
       {years.map((year) => (
         <option key={year} value={year}>
           {year}
@@ -68,6 +83,123 @@ const MonthSelector = () => {
   );
 };
 
+const SidePanel = () => {
+  let { data: user } = useQuery({
+    queryKey: ["user"],
+    queryFn: getCurrentUser,
+  });
+  let [show, setShow] = useState(false);
+  let {
+    handleSubmit,
+    formState: { errors },
+    control,
+  } = useForm();
+  const queryClient = useQueryClient();
+  let {
+    filters: { year, month },
+  } = useFilterContext();
+
+  const createActivity = async (newData) => {
+    try {
+      const { data: newActivity, errors } = await client.models.Activity.create(
+        newData
+      );
+      if (errors) {
+        throw new Error(errors[0].message);
+      }
+
+      showNotification({
+        type: "success",
+        title: "Activity Update",
+        description: `Now tracking ${newActivity.name}`,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["activities"],
+      });
+
+      setShow(false);
+    } catch (e) {
+      showNotification({
+        type: "error",
+        title: "Could not add activity",
+        description: e.message,
+      });
+    }
+  };
+
+  const onSubmit = (data) => {
+    let newData = {
+      ...data,
+      userId: user?.userId,
+      period: `${year}#${month}`,
+      successes: [],
+    };
+    createActivity(newData);
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => setShow(true)}
+        className="rounded-full text-white bg-primary-500 fixed bottom-4 right-4 py-1 px-4 hover:cursor-pointer"
+      >
+        <span className="text-3xl">+</span>
+      </button>
+      {show ? (
+        <section
+          className={`${
+            show ? "block" : "hidden"
+          } fixed z-10 right-0 py-12 px-20 top-0 bottom-0 bg-beige-100 rounded-l-3xl shadow-xl`}
+        >
+          <h2 className="text-xl font-bold mb-8">Add a New Activity</h2>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-4"
+          >
+            <Controller
+              name="name"
+              control={control}
+              rules={{
+                required: "This field is required",
+              }}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  errors={errors.name}
+                  className="mb-4 bg-white"
+                  label="Name"
+                  type="text"
+                />
+              )}
+            />
+            <Controller
+              name="target"
+              control={control}
+              rules={{
+                required: "This field is required",
+              }}
+              render={({ field }) => (
+                <TextInput
+                  {...field}
+                  errors={errors.target}
+                  className="mb-4 bg-white"
+                  label="Target"
+                  type="number"
+                />
+              )}
+            />
+            <div className="flex flex-col mt-8 gap-4">
+              <Button variant="emphasized">Save</Button>
+              <Button onClick={() => setShow(false)}>Cancel</Button>
+            </div>
+          </form>
+        </section>
+      ) : null}
+    </>
+  );
+};
+
 const ActivityManager = () => {
   let [filters, setFilters] = useState({
     year: new Date().getFullYear(),
@@ -80,6 +212,7 @@ const ActivityManager = () => {
         <YearSelector />
         <MonthSelector />
         <ActivityTable />
+        <SidePanel />
       </FilterContext.Provider>
     </main>
   );
@@ -91,8 +224,8 @@ const ActivityManager = () => {
 export default function Page() {
   return (
     <>
-        <AppHeader />
-        <ActivityManager />
+      <AppHeader />
+      <ActivityManager />
     </>
   );
 }

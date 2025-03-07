@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchUserAttributes } from "aws-amplify/auth";
+import { fetchUserAttributes, getCurrentUser } from "aws-amplify/auth";
 
 export default function AppHeader() {
   let { data, status } = useQuery({
@@ -7,12 +7,17 @@ export default function AppHeader() {
     queryFn: fetchUserAttributes,
   });
 
+  useQuery({
+    queryKey: ["currentUser"],
+    queryFn: getCurrentUser,
+  });
+
   if (status == "error") {
     return "...Error";
   }
 
   if (status == "pending") {
-    return <div className="w-full h-16"></div>
+    return <div className="w-full h-16"></div>;
   }
 
   return (
