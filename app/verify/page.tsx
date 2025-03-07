@@ -8,10 +8,9 @@ import {
 } from "react-hook-form";
 import Button from "../_components/button/button";
 import TextInput from "../_components/form/text-input";
-import { autoSignIn, confirmSignUp, getCurrentUser } from "aws-amplify/auth";
+import { autoSignIn, confirmSignUp } from "aws-amplify/auth";
 import { showNotification } from "../_components/toast/toast";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 /**
  * Use this component to validate a user
