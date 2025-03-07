@@ -12,6 +12,7 @@
 }
 
 @theme static {
+  --color-beige-100: #fff7f3;
   --color-beige-500: #f8e6dd;
   --color-deep-blue-500: #355070;
   --color-primary-900: var(--color-deep-blue-900);
