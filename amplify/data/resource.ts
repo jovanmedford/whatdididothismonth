@@ -6,13 +6,13 @@ const schema = a.schema({
       userId: a.id().required(),
       period: a.string().required(),
       activityId: a.id(),
-      name: a.string(),
-      target: a.integer(),
-      successes: a.integer().array().default([]),
+      name: a.string().required(),
+      target: a.integer().required(),
+      successes: a.integer().array(),
       longestStreak: a.integer(),
       notes: a.json(),
     })
-    .identifier(["userId", "period"])
+    .identifier(["userId", "period", "name"])
     .authorization((allow) => [allow.publicApiKey()]),
 });
 

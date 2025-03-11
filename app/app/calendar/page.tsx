@@ -8,11 +8,12 @@ import { FilterContext, Filters, useFilterContext } from "./filter-context";
 import TextInput from "@/app/_components/form/text-input";
 import Button from "@/app/_components/button/button";
 import { Controller, useForm } from "react-hook-form";
-import type { Schema } from "../amplify/data/resource";
+import { Schema } from "@/amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUser } from "aws-amplify/auth";
 import { showNotification } from "@/app/_components/toast/toast";
+import { Activity } from "@/app/_types/types";
 
 const client = generateClient<Schema>();
 
@@ -83,9 +84,19 @@ const MonthSelector = () => {
   );
 };
 
+const createActivity = async (newData: Activity): Promise<Activity | null> => {
+  const { data, errors } = await client.models.Activity.create(newData);
+
+  if (errors) {
+    throw new Error(errors[0].message);
+  }
+
+  return data;
+};
+
 const SidePanel = () => {
   let { data: user } = useQuery({
-    queryKey: ["user"],
+    queryKey: ["currentUser"],
     queryFn: getCurrentUser,
   });
   let [show, setShow] = useState(false);
@@ -99,13 +110,24 @@ const SidePanel = () => {
     filters: { year, month },
   } = useFilterContext();
 
-  const createActivity = async (newData) => {
-    try {
-      const { data: newActivity, errors } = await client.models.Activity.create(
-        newData
-      );
-      if (errors) {
-        throw new Error(errors[0].message);
+  const mutation = useMutation({
+    mutationFn: createActivity,
+    onError: (e) => {
+      showNotification({
+        type: "error",
+        title: "Could not add activity",
+        description: e.message,
+      });
+    },
+    onSuccess: (data) => {
+      let newActivity = data;
+
+      if (!newActivity) {
+        return showNotification({
+          type: "error",
+          title: "Could not add activity",
+          description: "Please try again.",
+        });
       }
 
       showNotification({
@@ -114,19 +136,11 @@ const SidePanel = () => {
         description: `Now tracking ${newActivity.name}`,
       });
 
-      queryClient.invalidateQueries({
-        queryKey: ["activities"],
+      return queryClient.invalidateQueries({
+        queryKey: ["activties", year, month],
       });
-
-      setShow(false);
-    } catch (e) {
-      showNotification({
-        type: "error",
-        title: "Could not add activity",
-        description: e.message,
-      });
-    }
-  };
+    },
+  });
 
   const onSubmit = (data) => {
     let newData = {
@@ -135,7 +149,7 @@ const SidePanel = () => {
       period: `${year}#${month}`,
       successes: [],
     };
-    createActivity(newData);
+    mutation.mutate(newData);
   };
 
   return (

@@ -1,12 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { generateArray } from "@/app/utils";
-import type { Schema } from "../../../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { generateArray, getDbClient } from "@/app/utils";
 import { Filters, useFilterContext } from "./filter-context";
-
-const client = generateClient<Schema>();
+import { QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { AuthUser, getCurrentUser } from "aws-amplify/auth";
 
 const DateSquares = ({
   activityId = "activity",
@@ -51,19 +49,49 @@ const Row = ({ activity }: { activity: Activity }) => {
   );
 };
 
-const fetchActivities = async (filters: Filters) => {
-  const { data: items, errors } = await client.models.Activity.list();
-  if (errors) {
-    throw new Error(errors[0].message);
+const fetchActivities = async (filters: Filters, userId: string) => {
+  const docClient = getDbClient();
+
+  if (!docClient) {
+    console.log("Db client is not available");
+    return [];
   }
-  return items;
+
+  const command = new QueryCommand({
+    TableName: "Activity-aqifu6gcxnc4hburjj2wfxjnwu-NONE",
+    KeyConditionExpression: "userId = :userId and begins_with(#sk, :period)",
+    ExpressionAttributeNames: {
+      "#sk": "period#name",
+    },
+    ExpressionAttributeValues: {
+      ":userId": userId,
+      ":period": `${filters.year}#${filters.month}`,
+    },
+  });
+
+  try {
+    const response = await docClient.send(command);
+    return response.Items as Activity[];
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
 };
 
 export default function ActivityTable() {
   const { filters } = useFilterContext();
+
+  const { data: userData } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: getCurrentUser,
+  });
+
+  const userId = userData?.userId;
+
   const { status, data, error } = useQuery({
-    queryKey: ["activties", filters],
-    queryFn: () => fetchActivities(filters),
+    queryKey: ["activties", filters.year, filters.month, userData?.userId],
+    queryFn: () => fetchActivities(filters, userId),
+    enabled: !!userId
   });
 
   if (status === "pending") {
@@ -79,12 +107,14 @@ export default function ActivityTable() {
       <tbody>
         {Array.isArray(data) && data.length > 0 ? (
           data.map((activity: Activity) => (
-            <Row key={activity.id} activity={activity}></Row>
+            <Row key={`${activity.userId}-${activity["period#name"]}`} activity={activity}></Row>
           ))
         ) : (
-          <p className="text-center mt-8 block">
-            Whoops! No tracking data this month
-          </p>
+          <tr>
+            <td className="text-center mt-8 block">
+              Whoops! No tracking data this month
+            </td>
+          </tr>
         )}
       </tbody>
     </table>
@@ -92,8 +122,8 @@ export default function ActivityTable() {
 }
 
 interface Activity {
-  id: string;
   userId: string;
+  "period#name": string;
   name: string;
   target: number;
   successes: number[];

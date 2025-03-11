@@ -4,13 +4,13 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { getCurrentUser } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { showNotification } from "../_components/toast/toast";
+import { createDynamoClient } from "../utils";
 
 Amplify.configure(outputs);
 
@@ -29,6 +29,8 @@ const SessionProvider = ({ children }: { children: React.ReactNode }) => {
           throw Error("Please log in to use the app.");
         }
 
+
+        await createDynamoClient()
         setStatus("success");
       } catch (e) {
         showNotification({
@@ -57,7 +59,6 @@ export default function RootLayout({
 }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools />
       <SessionProvider>{children}</SessionProvider>
     </QueryClientProvider>
   );

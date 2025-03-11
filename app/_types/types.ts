@@ -6,7 +6,8 @@ export interface ActivityItem {
 }
 
 export interface Activity {
-  id: string;
+  userId: string;
+  period: string;
   name: string;
   target: number;
 }
