@@ -12,27 +12,26 @@ const tableName = process.env.WDIDTM_TABLE;
 /**
  * A simple example includes a HTTP get method to get all items from a DynamoDB table.
  */
-export const getAllItemsHandler = async (event) => {
+export const getUserActivitiesHandler = async (event) => {
   if (event.httpMethod !== "GET") {
     throw new Error(
-      `getAllItems only accept GET method, you tried: ${event.httpMethod}`
+      `getUserActivities only accept GET method, you tried: ${event.httpMethod}`
     );
   }
   // All log statements are written to CloudWatch
   console.info("received:", event);
 
-  // get all items from the table (only first 1MB data, you can use `LastEvaluatedKey` to get the rest of data)
-  // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
-  // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
+  const { year, month } = event.queryStringParameters;
+
   var params = {
     TableName: tableName,
-    KeyConditionExpression: "UserId = :userId and begins_with(#sk, :period)",
+    KeyConditionExpression: "userId = :userId and begins_with(#sk, :period)",
     ExpressionAttributeNames: {
-      "#sk": "Sk",
+      "#sk": "sk",
     },
     ExpressionAttributeValues: {
-      ":userId": userId,
-      ":period": `${event.year}#${event.month}`,
+      ":userId": "123",
+      ":period": `${year}#${month}`,
     },
   };
 
@@ -40,7 +39,7 @@ export const getAllItemsHandler = async (event) => {
     const data = await ddbDocClient.send(new QueryCommand(params));
     var items = data.Items;
   } catch (err) {
-    console.log("Error", err);
+    console.log("Console logged error --->", err);
   }
 
   const response = {

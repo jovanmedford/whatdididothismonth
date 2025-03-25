@@ -40,6 +40,32 @@ Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
+  getUserActivitiesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/get-user-activities.getUserActivitiesHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description:
+        Get user activities for a specified period.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the WDIDTMTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WDIDTMTable
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          WDIDTM_TABLE: !Ref WDIDTMTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /activities
+            Method: GET
+
   # This is a Lambda function config associated with the source code: get-by-id.js
   getByIdFunction:
     Type: AWS::Serverless::Function

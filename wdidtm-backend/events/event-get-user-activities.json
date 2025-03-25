@@ -1,0 +1,7 @@
+{
+  "httpMethod": "GET",
+  "queryStringParameters": {
+    "year": "2025",
+    "month": "03"
+  }
+}
