@@ -10,6 +10,26 @@ Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: WDIDTMUserPool
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+      UsernameAttributes:
+        - email
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: true
+        - AttributeDataType: String
+          Name: given_name
+          Required: true
+        - AttributeDataType: String
+          Name: family_name
+          Required: true
+
   # This is a Lambda function config associated with the source code: get-all-items.js
   getAllItemsFunction:
     Type: AWS::Serverless::Function
@@ -49,8 +69,7 @@ Resources:
         - x86_64
       MemorySize: 128
       Timeout: 100
-      Description:
-        Get user activities for a specified period.
+      Description: Get user activities for a specified period.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the WDIDTMTable
         - DynamoDBCrudPolicy:
@@ -140,8 +159,8 @@ Resources:
         - KeyType: RANGE
           AttributeName: sk
       ProvisionedThroughput:
-           WriteCapacityUnits: 2
-           ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+        ReadCapacityUnits: 2
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
