@@ -42,3 +42,5 @@ amplifyconfiguration*
 
 #sam
 .aws-sam
+
+generate_hash.py

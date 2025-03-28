@@ -9,6 +9,16 @@ Transform:
 Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors: "'*'"
+      Auth:
+        DefaultAuthorizer: MyCognitoAuthorizer
+        Authorizers:
+          MyCognitoAuthorizer:
+            UserPoolArn: !GetAtt CognitoUserPool.Arn
 
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
@@ -82,6 +92,7 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref MyApi
             Path: /activities
             Method: GET
 
