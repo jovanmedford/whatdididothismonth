@@ -3,7 +3,6 @@
 import Button from "../_components/button/button";
 import TextInput from "../_components/form/text-input";
 import { Amplify } from "aws-amplify";
-import outputs from "@/amplify_outputs.json";
 import {
   Controller,
   FieldValues,
@@ -13,8 +12,9 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { loginUser } from "../utils";
+import { amplifyConfig } from "@/amplify_config";
 
-Amplify.configure(outputs);
+Amplify.configure(amplifyConfig);
 
 export const LoginForm = () => {
   const router = useRouter();
