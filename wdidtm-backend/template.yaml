@@ -40,6 +40,22 @@ Resources:
           Name: family_name
           Required: true
 
+  CognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      AllowUnauthenticatedIdentities: false
+      IdentityPoolName: WDIDTM-identity-pool
+      CognitoIdentityProviders:
+        - ProviderName: !GetAtt CognitoUserPool.ProviderName
+          ClientId: !GetAtt UserPoolClient.ClientId
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: WDIDTM-ui-client
+      GenerateSecret: true
+      UserPoolId: !GetAtt CognitoUserPool.UserPoolId
+
   # This is a Lambda function config associated with the source code: get-all-items.js
   getAllItemsFunction:
     Type: AWS::Serverless::Function
