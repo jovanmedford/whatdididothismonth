@@ -53,7 +53,7 @@ Resources:
     Type: AWS::Cognito::UserPoolClient
     Properties:
       ClientName: WDIDTM-ui-client
-      GenerateSecret: true
+      GenerateSecret: false
       UserPoolId: !GetAtt CognitoUserPool.UserPoolId
 
   # This is a Lambda function config associated with the source code: get-all-items.js

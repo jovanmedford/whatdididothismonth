@@ -6,13 +6,13 @@ import {
 } from "@tanstack/react-query";
 import { getCurrentUser } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
-import outputs from "@/amplify_outputs.json";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { showNotification } from "../_components/toast/toast";
 import { createDynamoClient } from "../utils";
+import { amplifyConfig } from "@/amplify_config";
 
-Amplify.configure(outputs);
+Amplify.configure(amplifyConfig);
 
 const queryClient = new QueryClient();
 
