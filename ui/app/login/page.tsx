@@ -11,7 +11,7 @@ import {
 } from "react-hook-form";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { loginUser } from "../utils";
+import { loginUser } from "./loginUser";
 import { amplifyConfig } from "@/amplify_config";
 
 Amplify.configure(amplifyConfig);
