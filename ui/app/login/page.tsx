@@ -31,7 +31,7 @@ export const LoginForm = () => {
   return (
     <form className="flex flex-col max-w-sm" onSubmit={handleSubmit(onSubmit)}>
       <Controller
-        name="email"
+        name="username"
         control={control}
         rules={{
           required: "This field is required",
