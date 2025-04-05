@@ -29,6 +29,8 @@ Resources:
           MinimumLength: 8
       UsernameAttributes:
         - email
+      AutoVerifiedAttributes:
+        - email
       Schema:
         - AttributeDataType: String
           Name: email
@@ -39,6 +41,8 @@ Resources:
         - AttributeDataType: String
           Name: family_name
           Required: true
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
 
   CognitoIdentityPool:
     Type: AWS::Cognito::IdentityPool
