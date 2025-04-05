@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import AppHeader from "../app-header";
 import ActivityTable from "./activity-table";
 import { months } from "./data";
 import { FilterContext, Filters, useFilterContext } from "./filter-context";
 import TextInput from "@/app/_components/form/text-input";
 import Button from "@/app/_components/button/button";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Schema } from "@/amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -27,7 +27,7 @@ const YearSelector = () => {
   let years = getYears();
   let { filters, setFilters } = useFilterContext();
 
-  function handleChange(e) {
+  function handleChange(e: ChangeEvent<HTMLSelectElement>) {
     setFilters((oldFilters: Filters) => ({
       ...oldFilters,
       year: Number(e.target.value),
@@ -53,7 +53,7 @@ const YearSelector = () => {
 const MonthSelector = () => {
   let { filters, setFilters } = useFilterContext();
 
-  const handleMonthChange = (e) => {
+  const handleMonthChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFilters((oldFilters: Filters) => ({
       ...oldFilters,
       month: Number(e.target.value),
@@ -85,13 +85,13 @@ const MonthSelector = () => {
 };
 
 const createActivity = async (newData: Activity): Promise<Activity | null> => {
-  const { data, errors } = await client.models.Activity.create(newData);
+  // const { data, errors } = {data: null}
 
-  if (errors) {
-    throw new Error(errors[0].message);
-  }
+  // if (errors) {
+  //   throw new Error(errors[0].message);
+  // }
 
-  return data;
+  return null;
 };
 
 const SidePanel = () => {
@@ -104,7 +104,7 @@ const SidePanel = () => {
     handleSubmit,
     formState: { errors },
     control,
-  } = useForm();
+  } = useForm<ActivityFormData>();
   const queryClient = useQueryClient();
   let {
     filters: { year, month },
@@ -142,11 +142,15 @@ const SidePanel = () => {
     },
   });
 
-  const onSubmit = (data) => {
-    let newData = {
+  const onSubmit: SubmitHandler<ActivityFormData> = (data) => {
+    if (!user) {
+      return
+    }
+
+    let newData: Activity = {
       ...data,
-      userId: user?.userId,
-      period: `${year}#${month}`,
+      userId: user.userId,
+      "period#name": `${year}#${month}#${data.name}`,
       successes: [],
     };
     mutation.mutate(newData);
@@ -180,7 +184,7 @@ const SidePanel = () => {
               render={({ field }) => (
                 <TextInput
                   {...field}
-                  errors={errors.name}
+                  error={errors.name}
                   className="mb-4 bg-white"
                   label="Name"
                   type="text"
@@ -196,7 +200,7 @@ const SidePanel = () => {
               render={({ field }) => (
                 <TextInput
                   {...field}
-                  errors={errors.target}
+                  error={errors.target}
                   className="mb-4 bg-white"
                   label="Target"
                   type="number"
@@ -214,6 +218,8 @@ const SidePanel = () => {
   );
 };
 
+type ActivityFormData = Pick<Activity, "name" | "target">
+ 
 const ActivityManager = () => {
   let [filters, setFilters] = useState({
     year: new Date().getFullYear(),

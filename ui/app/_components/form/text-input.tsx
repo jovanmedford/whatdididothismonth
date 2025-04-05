@@ -1,16 +1,16 @@
 import { InputHTMLAttributes } from "react";
-import { FieldErrors, FieldValues } from "react-hook-form";
+import { FieldError } from "react-hook-form";
 
 interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
-  errors?: FieldErrors<FieldValues>;
+  error?: FieldError;
 }
 
 export default function TextInput({
   label,
   type,
   className,
-  errors,
+  error,
   ...props
 }: TextInputProps) {
   return (
@@ -22,7 +22,7 @@ export default function TextInput({
           className={className + " " + "border-1 block w-full"}
           type={type}
         />
-        {errors ? <p className="mb-4 text-red-600">{errors?.message}</p> : null}
+        {error ? <p className="mb-4 text-red-600">{error.message}</p> : null}
       </label>
     </>
   );

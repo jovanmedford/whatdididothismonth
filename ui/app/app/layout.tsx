@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { getCurrentUser } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
 import { useRouter } from "next/navigation";
@@ -29,15 +26,17 @@ const SessionProvider = ({ children }: { children: React.ReactNode }) => {
           throw Error("Please log in to use the app.");
         }
 
-
-        await createDynamoClient()
+        await createDynamoClient();
         setStatus("success");
       } catch (e) {
-        showNotification({
-          type: "error",
-          title: "An error occured",
-          description: e.message,
-        });
+        if (e instanceof Error) {
+          showNotification({
+            type: "error",
+            title: "An error occured",
+            description: e.message,
+          });
+        }
+
         router.push("/login");
       }
     };

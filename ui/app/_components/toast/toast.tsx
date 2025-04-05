@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import EE from "eventemitter3";
 import "./toast.css";
 
@@ -44,7 +44,9 @@ export function ToastContainer() {
     };
     emitter.on("message", listener);
 
-    return () => emitter.off("message", listener);
+    return () => {
+      emitter.off("message", listener);
+    };
   }, []);
 
   return (

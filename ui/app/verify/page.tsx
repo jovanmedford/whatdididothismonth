@@ -2,7 +2,6 @@
 
 import {
   Controller,
-  FieldValues,
   SubmitHandler,
   useForm,
 } from "react-hook-form";
@@ -21,10 +20,10 @@ export default function Page() {
     handleSubmit,
     formState: { errors },
     control,
-  } = useForm();
+  } = useForm<VerificationFormData>();
   const router = useRouter();
 
-  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+  const onSubmit: SubmitHandler<VerificationFormData> = async (data) => {
     try {
       let email = localStorage.getItem("email");
 
@@ -51,11 +50,14 @@ export default function Page() {
         }
       }
     } catch (e) {
-      showNotification({
-        type: "error",
-        title: "Error",
-        description: e.message,
-      });
+      if (e instanceof Error) {
+        showNotification({
+          type: "error",
+          title: "Error",
+          description: e.message,
+        });
+      }
+
       console.log(e);
     }
   };
@@ -77,7 +79,7 @@ export default function Page() {
             render={({ field }) => (
               <TextInput
                 {...field}
-                errors={errors.confirmationCode}
+                error={errors.confirmationCode}
                 className="mb-4"
                 label="Verification Code"
                 type="text"
@@ -89,6 +91,10 @@ export default function Page() {
       </div>
     </>
   );
+}
+
+export interface VerificationFormData {
+  confirmationCode: string
 }
 
 export interface ConfirmationConfiguration {

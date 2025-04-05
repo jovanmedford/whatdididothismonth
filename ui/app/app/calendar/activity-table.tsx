@@ -68,13 +68,6 @@ const DateSquares = ({ activity }: { activity: Activity }) => {
     },
   });
 
-  const handleSquareClicked = (e) => {
-    let successIndex = Number(e.target.dataset.index as string);
-    if (!successSet.has(successIndex)) {
-      mutation.mutate({ activity, successIndex });
-    }
-  };
-
   return (
     <div className="flex gap-4 w-40 m-auto md:w-full md:flex-wrap overflow-auto">
       {indices.map((index) => (
@@ -86,7 +79,6 @@ const DateSquares = ({ activity }: { activity: Activity }) => {
           <input
             readOnly
             data-index={index}
-            onClick={handleSquareClicked}
             checked={successSet.has(index)}
             type="checkbox"
             name={activity["period#name"]}
@@ -111,12 +103,17 @@ const Row = ({ activity }: { activity: Activity }) => {
   );
 };
 
-const fetchActivities = async (filters: Filters, userId: string) => {
+const fetchActivities = async (filters: Filters, userId?: string) => {
   const docClient = getDbClient();
 
   if (!docClient) {
     console.log("Db client is not available");
     return [];
+  }
+
+  if (!userId) {
+    console.log("Not signed in")
+    return []
   }
 
   const command = new QueryCommand({

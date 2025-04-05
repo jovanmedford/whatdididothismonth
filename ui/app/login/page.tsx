@@ -3,28 +3,23 @@
 import Button from "../_components/button/button";
 import TextInput from "../_components/form/text-input";
 import { Amplify } from "aws-amplify";
-import {
-  Controller,
-  FieldValues,
-  SubmitHandler,
-  useForm,
-} from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { loginUser } from "./loginUser";
+import { LoginData, loginUser } from "./loginUser";
 import { amplifyConfig } from "@/amplify_config";
 
 Amplify.configure(amplifyConfig);
 
-export const LoginForm = () => {
+const LoginForm = () => {
   const router = useRouter();
   let {
     handleSubmit,
     formState: { errors },
     control,
-  } = useForm();
+  } = useForm<LoginData>();
 
-  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+  const onSubmit: SubmitHandler<LoginData> = async (data) => {
     loginUser(data, router);
   };
 
@@ -43,7 +38,7 @@ export const LoginForm = () => {
         render={({ field }) => (
           <TextInput
             {...field}
-            errors={errors.email}
+            error={errors?.username}
             className="mb-4"
             label="Email"
             type="text"
@@ -57,7 +52,7 @@ export const LoginForm = () => {
         render={({ field }) => (
           <TextInput
             {...field}
-            errors={errors.password}
+            error={errors?.password}
             className="mb-4"
             label="Password"
             type="password"

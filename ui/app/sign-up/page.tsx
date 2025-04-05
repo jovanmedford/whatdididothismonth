@@ -5,7 +5,6 @@ import TextInput from "../_components/form/text-input";
 import { Amplify } from "aws-amplify";
 import {
   Controller,
-  FieldValues,
   SubmitHandler,
   useForm,
 } from "react-hook-form";
@@ -21,9 +20,9 @@ const SignUpForm = () => {
     handleSubmit,
     formState: { errors },
     control,
-  } = useForm();
+  } = useForm<SignUpFormData>();
 
-  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+  const onSubmit: SubmitHandler<SignUpFormData> = async (data) => {
     signUpUser(data, router);
   };
 
@@ -37,7 +36,7 @@ const SignUpForm = () => {
           render={({ field }) => (
             <TextInput
               {...field}
-              errors={errors.firstName}
+              error={errors.firstName}
               className="mb-4"
               label="First Name"
               type="text"
@@ -51,7 +50,7 @@ const SignUpForm = () => {
           render={({ field }) => (
             <TextInput
               {...field}
-              errors={errors.lastName}
+              error={errors.lastName}
               className="mb-4"
               label="Last Name"
               type="text"
@@ -61,7 +60,7 @@ const SignUpForm = () => {
       </div>
 
       <Controller
-        name="email"
+        name="username"
         control={control}
         rules={{
           required: "This field is required",
@@ -73,7 +72,7 @@ const SignUpForm = () => {
         render={({ field }) => (
           <TextInput
             {...field}
-            errors={errors.email}
+            error={errors.username}
             className="mb-4"
             label="Email"
             type="text"
@@ -87,7 +86,7 @@ const SignUpForm = () => {
         render={({ field }) => (
           <TextInput
             {...field}
-            errors={errors.password}
+            error={errors.password}
             className="mb-4"
             label="Password"
             type="password"
@@ -120,4 +119,11 @@ export default function SignUp() {
       </section>
     </main>
   );
+}
+
+export interface SignUpFormData {
+  firstName: string,
+  lastName: string,
+  username: string,
+  password: string
 }
