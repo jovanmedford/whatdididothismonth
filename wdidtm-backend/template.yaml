@@ -44,6 +44,13 @@ Resources:
       VerificationMessageTemplate:
         DefaultEmailOption: CONFIRM_WITH_CODE
 
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: WDIDTM-ui-client
+      GenerateSecret: false
+      UserPoolId: !GetAtt CognitoUserPool.UserPoolId
+
   CognitoIdentityPool:
     Type: AWS::Cognito::IdentityPool
     Properties:
@@ -53,12 +60,38 @@ Resources:
         - ProviderName: !GetAtt CognitoUserPool.ProviderName
           ClientId: !GetAtt UserPoolClient.ClientId
 
-  UserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
+  IdentityPoolRole:
+    Type: AWS::IAM::Role
     Properties:
-      ClientName: WDIDTM-ui-client
-      GenerateSecret: false
-      UserPoolId: !GetAtt CognitoUserPool.UserPoolId
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated:
+                - cognito-identity.amazonaws.com
+            Action:
+              - "sts:AssumeRoleWithWebIdentity"
+            Condition:
+              StringEquals:
+                cognito-identity.amazonaws.com:aud: !Ref CognitoIdentityPool
+              ForAnyValue:StringLike:
+                cognito-identity.amazonaws.com:amr: "authenticated"
+      Policies:
+        - PolicyName: IdentityPoolAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "cognito-identity:GetCredentialsForIdentity"
+                Resource: "*"
+
+  IdentityPoolRoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref CognitoIdentityPool
+      Roles:
+        authenticated: !GetAtt IdentityPoolRole.Arn
 
   # This is a Lambda function config associated with the source code: get-all-items.js
   getAllItemsFunction:
