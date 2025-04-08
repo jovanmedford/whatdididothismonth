@@ -13,10 +13,23 @@ const tableName = process.env.WDIDTM_TABLE;
  * A simple example includes a HTTP get method to get all items from a DynamoDB table.
  */
 export const getUserActivitiesHandler = async (event) => {
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "GET,OPTIONS",
+      },
+      body: "",
+    };
+  }
+
   if (event.httpMethod !== "GET") {
-    throw new Error(
-      `getUserActivities only accept GET method, you tried: ${event.httpMethod}`
-    );
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: "Method not allowed." }),
+    };
   }
   // All log statements are written to CloudWatch
   console.info("received:", event);
@@ -44,6 +57,11 @@ export const getUserActivitiesHandler = async (event) => {
 
   const response = {
     statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Content-Type,Authorization",
+      "Access-Control-Allow-Methods": "GET,OPTIONS",
+    },
     body: JSON.stringify(items),
   };
 
