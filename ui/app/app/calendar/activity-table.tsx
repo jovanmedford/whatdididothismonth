@@ -24,7 +24,6 @@ const addSuccess = async ({
 const DateSquares = ({ activity }: { activity: Activity }) => {
   let indices = generateArray(0, 31);
   const { filters } = useFilterContext();
-  console.log(activity);
   let successSet = new Set(activity.successes);
 
   const queryClient = useQueryClient();
