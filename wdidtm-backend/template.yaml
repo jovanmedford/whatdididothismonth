@@ -13,7 +13,10 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
-      Cors: "'*'"
+      Cors:
+        AllowMethods: "'OPTIONS, GET'"
+        AllowHeaders: "'Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Origin,Content-Type,Authorization'"
+        AllowOrigin: "'*'"
       Auth:
         DefaultAuthorizer: MyCognitoAuthorizer
         AddDefaultAuthorizerToCorsPreflight: false
@@ -215,12 +218,12 @@ Resources:
     Properties:
       AttributeDefinitions:
         - AttributeType: S
-          AttributeName: userId
+          AttributeName: pk
         - AttributeType: S
           AttributeName: sk
       KeySchema:
         - KeyType: HASH
-          AttributeName: userId
+          AttributeName: pk
         - KeyType: RANGE
           AttributeName: sk
       ProvisionedThroughput:
