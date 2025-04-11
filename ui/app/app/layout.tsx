@@ -6,7 +6,6 @@ import { Amplify } from "aws-amplify";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { showNotification } from "../_components/toast/toast";
-import { createDynamoClient } from "../utils";
 import { amplifyConfig } from "@/amplify_config";
 
 Amplify.configure(amplifyConfig);
@@ -26,7 +25,6 @@ const SessionProvider = ({ children }: { children: React.ReactNode }) => {
           throw Error("Please log in to use the app.");
         }
 
-        await createDynamoClient();
         setStatus("success");
       } catch (e) {
         if (e instanceof Error) {

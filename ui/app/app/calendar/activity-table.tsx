@@ -1,10 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { generateArray, getDbClient } from "@/app/utils";
+import { generateArray } from "@/app/utils";
 import { Filters, useFilterContext } from "./filter-context";
-import { QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { getCurrentUser } from "aws-amplify/auth";
+import {
+  AuthSession,
+  fetchAuthSession,
+  getCurrentUser,
+} from "aws-amplify/auth";
 import { showNotification } from "@/app/_components/toast/toast";
 import { Activity } from "@/app/_types/types";
 
@@ -15,38 +18,13 @@ const addSuccess = async ({
   activity: Activity;
   successIndex: number;
 }) => {
-  const docClient = getDbClient();
-
-  if (!docClient) {
-    console.log("Db client is not available");
-    return;
-  }
-
-  const command = new UpdateCommand({
-    TableName: "Activity-aqifu6gcxnc4hburjj2wfxjnwu-NONE",
-    Key: {
-      userId: activity.userId,
-      ["period#name"]: activity["period#name"],
-    },
-    UpdateExpression: "SET successes = list_append(:s, :i)",
-    ExpressionAttributeValues: {
-      ":s": activity.successes,
-      ":i": [successIndex],
-    },
-  });
-
-  const response = await docClient.send(command);
-
-  if (!response) {
-    throw Error();
-  }
-
-  return response.ItemCollectionMetrics?.ItemCollectionKey;
+  return {};
 };
 
 const DateSquares = ({ activity }: { activity: Activity }) => {
   let indices = generateArray(0, 31);
   const { filters } = useFilterContext();
+  console.log(activity);
   let successSet = new Set(activity.successes);
 
   const queryClient = useQueryClient();
@@ -55,7 +33,7 @@ const DateSquares = ({ activity }: { activity: Activity }) => {
     mutationFn: addSuccess,
     onSuccess: () => {
       return queryClient.invalidateQueries({
-        queryKey: ["activties", filters.year, filters.month, activity.userId],
+        queryKey: ["activties", filters.year, filters.month, activity.sk],
       });
     },
     onError: (e) => {
@@ -81,7 +59,7 @@ const DateSquares = ({ activity }: { activity: Activity }) => {
             data-index={index}
             checked={successSet.has(index)}
             type="checkbox"
-            name={activity["period#name"]}
+            name={activity.sk}
           ></input>
         </label>
       ))}
@@ -93,7 +71,7 @@ const Row = ({ activity }: { activity: Activity }) => {
   return (
     <tr tabIndex={0} className="h-20 border-b-1">
       <th className="w-6/12 md:w-4/12 border-r-1">
-        {activity.name}{" "}
+        {activity.activityName}
         <span className="text-xs font-normal">(0/{activity.target})</span>
       </th>
       <td className="w-6/12 md:w-8/12 overflow-x-auto">
@@ -103,42 +81,46 @@ const Row = ({ activity }: { activity: Activity }) => {
   );
 };
 
-const fetchActivities = async (filters: Filters, userId?: string) => {
-  const docClient = getDbClient();
-
-  if (!docClient) {
-    console.log("Db client is not available");
+const fetchActivities = async (
+  filters: Filters,
+  session?: AuthSession,
+  userId?: string
+) => {
+  if (!userId || !session || !session.tokens?.idToken) {
+    console.log("Not signed in");
     return [];
   }
 
-  if (!userId) {
-    console.log("Not signed in")
-    return []
+  let params = new URLSearchParams();
+  params.set("year", String(filters.year));
+  params.set("month", String(filters.month));
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_ENDPOINT}/activities?${params.toString()}`,
+    {
+      mode: "cors",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: session.tokens.idToken.toString(),
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw Error;
   }
 
-  const command = new QueryCommand({
-    TableName: "Activity-aqifu6gcxnc4hburjj2wfxjnwu-NONE",
-    KeyConditionExpression: "userId = :userId and begins_with(#sk, :period)",
-    ExpressionAttributeNames: {
-      "#sk": "period#name",
-    },
-    ExpressionAttributeValues: {
-      ":userId": userId,
-      ":period": `${filters.year}#${filters.month}`,
-    },
-  });
-
-  try {
-    const response = await docClient.send(command);
-    return response.Items as Activity[];
-  } catch (e) {
-    console.log(e);
-    throw e;
-  }
+  return response.json();
 };
 
 export default function ActivityTable() {
   const { filters } = useFilterContext();
+
+  let { data: session, status: testStatus } = useQuery<AuthSession>({
+    queryKey: ["session"],
+    queryFn: async () => await fetchAuthSession(),
+  });
 
   const { data: userData } = useQuery({
     queryKey: ["currentUser"],
@@ -149,7 +131,7 @@ export default function ActivityTable() {
 
   const { status, data, error } = useQuery({
     queryKey: ["activties", filters.year, filters.month, userData?.userId],
-    queryFn: () => fetchActivities(filters, userId),
+    queryFn: () => fetchActivities(filters, session, userId),
     enabled: !!userId,
   });
 
@@ -166,7 +148,7 @@ export default function ActivityTable() {
       <tbody>
         {Array.isArray(data) && data.length > 0 ? (
           data.map((activity: Activity) => (
-            <Row key={`${activity["period#name"]}`} activity={activity}></Row>
+            <Row key={`${activity.sk}`} activity={activity}></Row>
           ))
         ) : (
           <tr>

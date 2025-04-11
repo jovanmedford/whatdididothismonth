@@ -1,9 +1,7 @@
 import { fetchAuthSession, signUp } from "aws-amplify/auth";
 import { showNotification } from "./_components/toast/toast";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { AuthError } from "@aws-amplify/auth";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { loginUser } from "./login/loginUser";
 
 export async function signUpUser(
@@ -69,29 +67,6 @@ async function getAuthSession() {
       });
     }
   }
-}
-
-let docClient: null | DynamoDBDocumentClient;
-
-export async function createDynamoClient() {
-  const authSession = await getAuthSession();
-
-  if (!authSession) {
-    docClient = null;
-    return;
-  }
-
-  if (!docClient) {
-    const client = new DynamoDBClient({
-      region: "us-east-1",
-      credentials: authSession.credentials,
-    });
-    docClient = DynamoDBDocumentClient.from(client);
-  }
-}
-
-export function getDbClient() {
-  return docClient;
 }
 
 export const generateArray = (start: number, end: number) => {

@@ -133,7 +133,7 @@ const SidePanel = () => {
       showNotification({
         type: "success",
         title: "Activity Update",
-        description: `Now tracking ${newActivity.name}`,
+        description: `Now tracking ${newActivity.activityName}`,
       });
 
       return queryClient.invalidateQueries({
@@ -144,14 +144,15 @@ const SidePanel = () => {
 
   const onSubmit: SubmitHandler<ActivityFormData> = (data) => {
     if (!user) {
-      return
+      return;
     }
 
     let newData: Activity = {
-      ...data,
-      userId: user.userId,
-      "period#name": `${year}#${month}#${data.name}`,
+      pk: user.userId,
+      sk: `${year}#${month}#${data.name}`,
       successes: [],
+      activityName: data.name,
+      target: data.target,
     };
     mutation.mutate(newData);
   };
@@ -218,8 +219,11 @@ const SidePanel = () => {
   );
 };
 
-type ActivityFormData = Pick<Activity, "name" | "target">
- 
+type ActivityFormData = {
+  name: string;
+  target: number;
+};
+
 const ActivityManager = () => {
   let [filters, setFilters] = useState({
     year: new Date().getFullYear(),
