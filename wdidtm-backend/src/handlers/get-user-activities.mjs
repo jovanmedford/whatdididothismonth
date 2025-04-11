@@ -3,48 +3,59 @@
 // Create a DocumentClient that represents the query to add an item
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
+
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
-// Get the DynamoDB table name from environment variables
 const tableName = process.env.WDIDTM_TABLE;
 
-/**
- * A simple example includes a HTTP get method to get all items from a DynamoDB table.
- */
 export const getUserActivitiesHandler = async (event) => {
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type,Authorization",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
-      },
-      body: "",
-    };
-  }
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Methods": "GET,OPTIONS",
+    "Cache-Control": "no-store",
+  };
 
   if (event.httpMethod !== "GET") {
     return {
       statusCode: 405,
+      headers: corsHeaders,
       body: JSON.stringify({ error: "Method not allowed." }),
     };
   }
-  // All log statements are written to CloudWatch
+
+  if (event.queryStringParameters === null) {
+    return {
+      statusCode: 400,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Missing required parameters." }),
+    };
+  }
+
   console.info("received:", event);
 
   const { year, month } = event.queryStringParameters;
 
+  if (!year || !month) {
+    return {
+      statusCode: 400,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Missing required parameters." }),
+    };
+  }
+
+  const email = event.requestContext.authorizer.claims.email;
+
   var params = {
     TableName: tableName,
-    KeyConditionExpression: "userId = :userId and begins_with(#sk, :period)",
+    KeyConditionExpression: "pk = :pk and begins_with(#sk, :period)",
     ExpressionAttributeNames: {
       "#sk": "sk",
     },
     ExpressionAttributeValues: {
-      ":userId": "123",
-      ":period": `${year}#${month}`,
+      ":pk": `${email}`,
+      ":period": `PROGRESS#${year}#${month}`,
     },
   };
 
@@ -53,15 +64,16 @@ export const getUserActivitiesHandler = async (event) => {
     var items = data.Items;
   } catch (err) {
     console.log("Console logged error --->", err);
+    return {
+      statusCode: 500,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Internal Server Error." }),
+    };
   }
 
   const response = {
     statusCode: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type,Authorization",
-      "Access-Control-Allow-Methods": "GET,OPTIONS",
-    },
+    headers: corsHeaders,
     body: JSON.stringify(items),
   };
 
