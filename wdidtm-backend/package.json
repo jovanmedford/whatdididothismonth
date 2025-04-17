@@ -5,7 +5,8 @@
   "private": true,
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.398.0",
-    "@aws-sdk/lib-dynamodb": "^3.398.0"
+    "@aws-sdk/lib-dynamodb": "^3.398.0",
+    "nanoid": "^5.1.5"
   },
   "devDependencies": {
     "aws-sdk-client-mock": "^2.2.0",
@@ -16,6 +17,9 @@
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js"
   },
   "jest": {
+    "setupFiles": [
+      "<rootDir>/jest.setup.js"
+    ],
     "testMatch": [
       "**/__tests__/**/*.[jt]s?(x)",
       "**/?(*.)+(spec|test).[jt]s?(x)",

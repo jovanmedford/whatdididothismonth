@@ -1,0 +1,1 @@
+process.env.WDIDTM_TABLE = 'Test-Table-123';
