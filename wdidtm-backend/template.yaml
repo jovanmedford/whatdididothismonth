@@ -237,6 +237,32 @@ Resources:
             Path: /categories
             Method: POST
 
+  addActivityFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/add-activity.addActivityHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Create a new activity.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the WDIDTMTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WDIDTMTable
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          WDIDTM_TABLE: !Ref WDIDTMTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /activities
+            Method: POST
+
   WDIDTMTable:
     Type: AWS::DynamoDB::Table
     Properties:

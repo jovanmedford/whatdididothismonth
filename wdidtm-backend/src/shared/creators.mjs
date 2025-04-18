@@ -30,7 +30,26 @@ export const createCategory = async (input, dbClient, tableName) => {
 /**
  * Creates a new  activity.
  */
-export const createActivity = (activity, dbClient, tableName) => {};
+export const createActivity = async (input, dbClient, tableName) => {
+  if (!input.name) {
+    throw new BadInputError("You are missing required properties")
+  }
+
+  let activity = {
+    ...input,
+    sk: `ACTIVITY#${nanoid(8)}`
+  }
+
+  let params = {
+    TableName: tableName,
+    Item: activity,
+    ConditionExpression: "attribute_not_exists(pk)"
+  }
+
+  await dbClient.send(new PutCommand(params))
+
+  return activity
+};
 
 /**
  * Creates a new log for an activity for a given period.
