@@ -4,20 +4,7 @@ import { addCategoryHandler } from "../../../src/handlers/add-category.mjs";
 import { ConditionalCheckFailedException } from "@aws-sdk/client-dynamodb";
 import { expect } from "@jest/globals";
 import "aws-sdk-client-mock-jest";
-
-const createPostEvent = (email, body) => {
-  return {
-    httpMethod: "POST",
-    requestContext: {
-      authorizer: {
-        claims: {
-          email,
-        },
-      },
-    },
-    body,
-  };
-};
+import { createPostEvent } from "../../../src/shared/utils.mjs";
 
 describe("add-category", () => {
   const ddbMock = mockClient(DynamoDBDocumentClient);
