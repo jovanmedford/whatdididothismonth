@@ -1,46 +1,25 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { getCurrentUser } from "aws-amplify/auth";
-import { Amplify } from "aws-amplify";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { showNotification } from "../_components/toast/toast";
-import { amplifyConfig } from "@/amplify_config";
-
-Amplify.configure(amplifyConfig);
-
-const queryClient = new QueryClient();
+import { useQuery } from "@tanstack/react-query";
 
 const SessionProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const [status, setStatus] = useState<"pending" | "success">("pending");
+  const {status, error} = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: getCurrentUser
+  })
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const user = await getCurrentUser();
-
-        if (!user) {
-          throw Error("Please log in to use the app.");
-        }
-
-        setStatus("success");
-      } catch (e) {
-        if (e instanceof Error) {
-          showNotification({
-            type: "error",
-            title: "An error occured",
-            description: e.message,
-          });
-        }
-
-        router.push("/login");
-      }
-    };
-
-    fetchUser();
-  }, []);
+  if (status == "error") {
+    router.push("/")
+    showNotification({
+      type: "error",
+      title: "An error occured",
+      description: error.message,
+    });
+  }
 
   if (status == "pending") {
     return "...loading";
@@ -55,8 +34,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <QueryClientProvider client={queryClient}>
       <SessionProvider>{children}</SessionProvider>
-    </QueryClientProvider>
   );
 }
