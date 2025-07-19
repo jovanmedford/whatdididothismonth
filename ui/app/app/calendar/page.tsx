@@ -14,6 +14,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCurrentUser } from "aws-amplify/auth";
 import { showNotification } from "@/app/_components/toast/toast";
 import { Activity } from "@/app/_types/types";
+import ActivityForm from "./activtiy-form";
 
 const client = generateClient<Schema>();
 
@@ -84,78 +85,8 @@ const MonthSelector = () => {
   );
 };
 
-const createActivity = async (newData: Activity): Promise<Activity | null> => {
-  // const { data, errors } = {data: null}
-
-  // if (errors) {
-  //   throw new Error(errors[0].message);
-  // }
-
-  return null;
-};
-
 const SidePanel = () => {
-  let { data: user } = useQuery({
-    queryKey: ["currentUser"],
-    queryFn: getCurrentUser,
-  });
   let [show, setShow] = useState(false);
-  let {
-    handleSubmit,
-    formState: { errors },
-    control,
-  } = useForm<ActivityFormData>();
-  const queryClient = useQueryClient();
-  let {
-    filters: { year, month },
-  } = useFilterContext();
-
-  const mutation = useMutation({
-    mutationFn: createActivity,
-    onError: (e) => {
-      showNotification({
-        type: "error",
-        title: "Could not add activity",
-        description: e.message,
-      });
-    },
-    onSuccess: (data) => {
-      let newActivity = data;
-
-      if (!newActivity) {
-        return showNotification({
-          type: "error",
-          title: "Could not add activity",
-          description: "Please try again.",
-        });
-      }
-
-      showNotification({
-        type: "success",
-        title: "Activity Update",
-        description: `Now tracking ${newActivity.activityName}`,
-      });
-
-      return queryClient.invalidateQueries({
-        queryKey: ["activties", year, month],
-      });
-    },
-  });
-
-  const onSubmit: SubmitHandler<ActivityFormData> = (data) => {
-    if (!user) {
-      return;
-    }
-
-    let newData: Activity = {
-      pk: user.userId,
-      sk: `${year}#${month}#${data.name}`,
-      successes: [],
-      activityName: data.name,
-      target: data.target,
-    };
-    mutation.mutate(newData);
-  };
 
   return (
     <>
@@ -172,47 +103,7 @@ const SidePanel = () => {
           } fixed z-10 right-0 py-12 px-20 top-0 bottom-0 bg-beige-100 rounded-l-3xl shadow-xl`}
         >
           <h2 className="text-xl font-bold mb-8">Add a New Activity</h2>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
-          >
-            <Controller
-              name="name"
-              control={control}
-              rules={{
-                required: "This field is required",
-              }}
-              render={({ field }) => (
-                <TextInput
-                  {...field}
-                  error={errors.name}
-                  className="mb-4 bg-white"
-                  label="Name"
-                  type="text"
-                />
-              )}
-            />
-            <Controller
-              name="target"
-              control={control}
-              rules={{
-                required: "This field is required",
-              }}
-              render={({ field }) => (
-                <TextInput
-                  {...field}
-                  error={errors.target}
-                  className="mb-4 bg-white"
-                  label="Target"
-                  type="number"
-                />
-              )}
-            />
-            <div className="flex flex-col mt-8 gap-4">
-              <Button variant="emphasized">Save</Button>
-              <Button onClick={() => setShow(false)}>Cancel</Button>
-            </div>
-          </form>
+          <ActivityForm />
         </section>
       ) : null}
     </>

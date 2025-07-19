@@ -9,3 +9,11 @@ export interface Activity {
   categoryColor?: string;
   categoryIcon?: string;
 }
+
+export interface Category {
+    pk: string,
+    sk: string
+    name: string,
+    color: string,
+    icon: string,
+}
