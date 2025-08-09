@@ -32,7 +32,7 @@ const DateSquares = ({ activity }: { activity: Activity }) => {
     mutationFn: addSuccess,
     onSuccess: () => {
       return queryClient.invalidateQueries({
-        queryKey: ["activties", filters.year, filters.month, activity.sk],
+        queryKey: ["activties", filters.year, filters.month, activity.activityId],
       });
     },
     onError: (e) => {
@@ -58,7 +58,7 @@ const DateSquares = ({ activity }: { activity: Activity }) => {
             data-index={index}
             checked={successSet.has(index)}
             type="checkbox"
-            name={activity.sk}
+            name={activity.activityId}
           ></input>
         </label>
       ))}
@@ -99,7 +99,6 @@ const fetchActivities = async (
     {
       mode: "cors",
       headers: {
-        "Access-Control-Allow-Origin": "*",
         Authorization: session.tokens.idToken.toString(),
         "Content-Type": "application/x-www-form-urlencoded",
       },
@@ -147,7 +146,7 @@ export default function ActivityTable() {
       <tbody>
         {Array.isArray(data) && data.length > 0 ? (
           data.map((activity: Activity) => (
-            <Row key={`${activity.sk}`} activity={activity}></Row>
+            <Row key={`${activity.activityId}`} activity={activity}></Row>
           ))
         ) : (
           <tr>

@@ -1,19 +1,16 @@
 export interface Activity {
-  sk: string;
-  pk: string;
-  target: number;
-  successes: number[];
+  activityId: string;
   activityName: string;
   categoryName?: string;
   categoryId?: string;
   categoryColor?: string;
   categoryIcon?: string;
+  target: number;
+  successes: number[];
 }
 
 export interface Category {
-    pk: string,
-    sk: string
-    name: string,
-    color: string,
-    icon: string,
+  name: string;
+  color: string;
+  icon: string;
 }

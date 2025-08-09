@@ -3,26 +3,129 @@ Description: >-
   wdidtm-backend
 Transform:
   - AWS::Serverless-2016-10-31
+Parameters:
+  RdsUser:
+    Description: Database Master User Name
+    Type: String
+    Default: postgresql
+  RdsPassword:
+    Description: Database Master User Password
+    Type: String
+    Default: postgresql
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+    Default: dev
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.16.0.0/16
+  AppSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the serveless ENIs
+    Type: String
+    Default: 10.16.10.0/24
+  DBSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the DB
+    Type: String
+    Default: 10.16.11.0/24
+  DBSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the DB
+    Type: String
+    Default: 10.16.12.0/24
 
-# Resources declares the AWS resources that you want to include in the stack
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-  MyApi:
-    Type: AWS::Serverless::Api
+  VPC:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      StageName: Prod
-      Cors:
-        AllowMethods: "'OPTIONS, GET'"
-        AllowHeaders: "'Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Origin,Content-Type,Authorization'"
-        AllowOrigin: "'*'"
-      Auth:
-        DefaultAuthorizer: MyCognitoAuthorizer
-        AddDefaultAuthorizerToCorsPreflight: false
-        Authorizers:
-          MyCognitoAuthorizer:
-            UserPoolArn: !GetAtt CognitoUserPool.Arn
+      TemplateURL: ./templates/vpc.yaml
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        VpcCIDR: !Ref VpcCIDR
+        AppSubnet1CIDR: !Ref AppSubnet1CIDR
+        DBSubnet1CIDR: !Ref DBSubnet1CIDR
+        DBSubnet2CIDR: !Ref DBSubnet2CIDR
+
+  DB:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/db.yaml
+      Parameters:
+        RdsUser: !Ref RdsUser
+        RdsPassword: !Ref RdsPassword
+        DBSecurityGroup: !GetAtt VPC.Outputs.DBSecurityGroup
+        DBSubnets: !GetAtt VPC.Outputs.DBSubnets
+    DependsOn: VPC
+
+  # --- Proxy  ---
+  ProxyKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: Allow access to key from this account
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource: "*"
+          - Sid: Allow RDS to use the key
+            Effect: Allow
+            Principal:
+              Service: rds.amazonaws.com
+            Action:
+              - kms:GenerateDataKey
+              - kms:Decrypt
+              - kms:Encrypt
+
+  ProxySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Credentials for proxy to access db.
+      KmsKeyId: !GetAtt ProxyKmsKey.Arn
+      SecretString: !Sub '{"username": "${RdsUser}", "password": "${RdsPassword}"}'
+
+  ProxyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - rds.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: proxy-key-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref ProxySecret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: !GetAtt ProxyKmsKey.Arn
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub secretsmanager.${AWS::Region}.amazonaws.com
+
+  DbProxy:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/db-proxy.yaml
+      Parameters:
+        DBInstanceName: !GetAtt DB.Outputs.DBInstanceName
+        DBProxySecurityGroup: !GetAtt VPC.Outputs.DBProxySecurityGroup
+        DBProxyRoleArn: !GetAtt ProxyRole.Arn
+        DBSubnets: !GetAtt VPC.Outputs.DBSubnets
+        ProxySecret: !Ref ProxySecret
+
+  # --- Security --
 
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
@@ -97,35 +200,22 @@ Resources:
       Roles:
         authenticated: !GetAtt IdentityPoolRole.Arn
 
-  # This is a Lambda function config associated with the source code: get-all-items.js
-  getAllItemsFunction:
-    Type: AWS::Serverless::Function
+  # --- API ---
+
+  MyApi:
+    Type: AWS::Serverless::Api
     Properties:
-      Handler: src/handlers/get-all-items.getAllItemsHandler
-      Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
-      Description:
-        A simple example includes a HTTP get method to get all items from
-        a DynamoDB table.
-      Policies:
-        # Give Create/Read/Update/Delete Permissions to the WDIDTMTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref WDIDTMTable
-      Environment:
-        Variables:
-          # Make table name accessible as environment variable from function code during execution
-          WDIDTM_TABLE: !Ref WDIDTMTable
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            Path: /
-            Method: GET
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+      StageName: Prod
+      Cors:
+        AllowMethods: "'OPTIONS, GET'"
+        AllowHeaders: "'Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Origin,Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        DefaultAuthorizer: MyCognitoAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          MyCognitoAuthorizer:
+            UserPoolArn: !GetAtt CognitoUserPool.Arn
 
   getUserActivitiesFunction:
     Type: AWS::Serverless::Function
@@ -137,14 +227,17 @@ Resources:
       MemorySize: 128
       Timeout: 100
       Description: Get user activities for a specified period.
-      Policies:
-        # Give Create/Read/Update/Delete Permissions to the WDIDTMTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref WDIDTMTable
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
-          WDIDTM_TABLE: !Ref WDIDTMTable
+          DB_USERNAME: !Ref RdsUser
+          DB_PASSWORD: !Ref RdsPassword
+          DB_PORT: 5432
+          DB_PROXY_ENDPOINT: !GetAtt DbProxy.Outputs.DBProxyEndpoint
+          DB_NAME: "postgres"
+      VpcConfig:
+        SecurityGroupIds: 
+          - !GetAtt VPC.Outputs.AppSecurityGroup
+        SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
       Events:
         Api:
           Type: Api
@@ -153,158 +246,80 @@ Resources:
             Path: /activities
             Method: GET
 
-  # This is a Lambda function config associated with the source code: get-by-id.js
-  getByIdFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/get-by-id.getByIdHandler
-      Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
-      Description:
-        A simple example includes a HTTP get method to get one item by
-        id from a DynamoDB table.
-      Policies:
-        # Give Create/Read/Update/Delete Permissions to the WDIDTMTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref WDIDTMTable
-      Environment:
-        Variables:
-          # Make table name accessible as environment variable from function code during execution
-          WDIDTM_TABLE: !Ref WDIDTMTable
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            Path: /{id}
-            Method: GET
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  # addCategoryFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: src/handlers/add-category.addCategoryHandler
+  #     Runtime: nodejs22.x
+  #     Architectures:
+  #       - x86_64
+  #     MemorySize: 128
+  #     Timeout: 100
+  #     Description: Create a new category.
 
-  # This is a Lambda function config associated with the source code: put-item.js
-  putItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/put-item.putItemHandler
-      Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
-      Description:
-        A simple example includes a HTTP post method to add one item to
-        a DynamoDB table.
-      Policies:
-        # Give Create/Read/Update/Delete Permissions to the WDIDTMTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref WDIDTMTable
-      Environment:
-        Variables:
-          # Make table name accessible as environment variable from function code during execution
-          WDIDTM_TABLE: !Ref WDIDTMTable
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            Path: /
-            Method: POST
+  #     Environment:
+  #       Variables:
+            # DB_USERNAME: !Ref RdsUser
+            # DB_PASSWORD: !Ref RdsPassword
+            # DB_PORT: 5432
+            # DB_PROXY_ENDPOINT: !GetAtt DBProxy.Outputs.DBProxyEndpoint
+  #     Events:
+  #       Api:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref MyApi
+  #           Path: /categories
+  #           Method: POST
 
-  addCategoryFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/add-category.addCategoryHandler
-      Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
-      Description: Create a new category.
-      Policies:
-        # Give Create/Read/Update/Delete Permissions to the WDIDTMTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref WDIDTMTable
-      Environment:
-        Variables:
-          # Make table name accessible as environment variable from function code during execution
-          WDIDTM_TABLE: !Ref WDIDTMTable
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref MyApi
-            Path: /categories
-            Method: POST
+  # addActivityFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: src/handlers/add-activity.addActivityHandler
+  #     Runtime: nodejs22.x
+  #     Architectures:
+  #       - x86_64
+  #     MemorySize: 128
+  #     Timeout: 100
+  #     Description: Create a new activity.
 
-  addActivityFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/add-activity.addActivityHandler
-      Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
-      Description: Create a new activity.
-      Policies:
-        # Give Create/Read/Update/Delete Permissions to the WDIDTMTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref WDIDTMTable
-      Environment:
-        Variables:
-          # Make table name accessible as environment variable from function code during execution
-          WDIDTM_TABLE: !Ref WDIDTMTable
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref MyApi
-            Path: /activities
-            Method: POST
-  
-  addLogFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: src/handlers/add-log.addLogHandler
-      Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
-      Description: Create a new activity log.
-      Policies:
-        # Give Create/Read/Update/Delete Permissions to the WDIDTMTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref WDIDTMTable
-      Environment:
-        Variables:
-          # Make table name accessible as environment variable from function code during execution
-          WDIDTM_TABLE: !Ref WDIDTMTable
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref MyApi
-            Path: /logs
-            Method: POST
+  #     Environment:
+  #       Variables:
+  #         DB_USERNAME: !Ref RdsUser
+          # DB_PASSWORD: !Ref RdsPassword
+          # DB_PORT: 5432
+          # DB_PROXY_ENDPOINT: !GetAtt DBProxy.Outputs.DBProxyEndpoint
+  #     Events:
+  #       Api:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref MyApi
+  #           Path: /activities
+  #           Method: POST
 
-  WDIDTMTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      AttributeDefinitions:
-        - AttributeType: S
-          AttributeName: pk
-        - AttributeType: S
-          AttributeName: sk
-      KeySchema:
-        - KeyType: HASH
-          AttributeName: pk
-        - KeyType: RANGE
-          AttributeName: sk
-      ProvisionedThroughput:
-        WriteCapacityUnits: 2
-        ReadCapacityUnits: 2
+  # addLogFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     Handler: src/handlers/add-log.addLogHandler
+  #     Runtime: nodejs22.x
+  #     Architectures:
+  #       - x86_64
+  #     MemorySize: 128
+  #     Timeout: 100
+  #     Description: Create a new activity log.
+
+  #     Environment:
+  #       Variables:
+  #         DB_USERNAME: !Ref RdsUser
+          # DB_PASSWORD: !Ref RdsPassword
+          # DB_PORT: 5432
+          # DB_PROXY_ENDPOINT: !GetAtt DBProxy.Outputs.DBProxyEndpoint
+  #     Events:
+  #       Api:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref MyApi
+  #           Path: /logs
+  #           Method: POST
 
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
@@ -313,17 +328,8 @@ Resources:
         Fn::Sub: ApplicationInsights-SAM-${AWS::StackName}
       ResourceQuery:
         Type: CLOUDFORMATION_STACK_1_0
-  # ApplicationInsightsMonitoring:
-  #   Type: AWS::ApplicationInsights::Application
-  #   Properties:
-  #     ResourceGroupName:
-  #       Ref: ApplicationResourceGroup
-  #     AutoConfigurationEnabled: "true"
-Outputs:
-  WebEndpoint:
-    Description: API Gateway endpoint URL for Prod stage
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-# # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Tracing: Active
