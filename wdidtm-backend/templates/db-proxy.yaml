@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Creates db proxy - manages lambda function connections to db
+Parameters:
+  DBInstanceName:
+    Type: String
+  DBProxySecurityGroup:
+    Type: String
+    Description: Security group ID for the DB instance
+  DBProxyRoleArn:
+    Type: String
+  DBSubnets:
+    Type: String
+  ProxySecret:
+    Type: String
+Resources:
+  DBProxy:
+    Type: AWS::RDS::DBProxy
+    Properties:
+      DBProxyName: DbProxy
+      VpcSecurityGroupIds:
+        - !Ref DBProxySecurityGroup
+      Auth:
+        - AuthScheme: SECRETS
+          SecretArn: !Ref ProxySecret
+          IAMAuth: DISABLED
+      EngineFamily: POSTGRESQL
+      VpcSubnetIds: !Split [",", !Ref DBSubnets]
+      RoleArn: !Ref DBProxyRoleArn
+
+  ProxyTagretGroup:
+    Type: AWS::RDS::DBProxyTargetGroup
+    Properties:
+      DBProxyName: !Ref DBProxy
+      DBInstanceIdentifiers:
+        - !Ref DBInstanceName
+      TargetGroupName: default
+    DependsOn: DBProxy
+
+Outputs:
+  DBProxyName:
+    Value: !Ref DBProxy
+  DBProxyEndpoint:
+    Value: !GetAtt DBProxy.Endpoint
+  DBproxyArn:
+    Value: !GetAtt DBProxy.DBProxyArn

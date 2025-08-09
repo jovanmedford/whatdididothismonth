@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: WDIDTM Backend Test
+Parameters:
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+    Default: dev
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.16.0.0/16
+  AppSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the serveless ENIs
+    Type: String
+    Default: 10.16.10.0/24
+  DBSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the DB
+    Type: String
+    Default: 10.16.11.0/24
+  DBSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the DB
+    Type: String
+    Default: 10.16.12.0/24
+
+Resources:
+  # --- VPC ---
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+
+  # --- Subnets ---
+  AppSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ""
+      CidrBlock: !Ref AppSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Value: !Sub ${EnvironmentName} App Subnet
+          Key: Name
+
+  DBSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref DBSubnet1CIDR
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 0
+        - !GetAZs ""
+      Tags:
+        - Value: !Sub ${EnvironmentName} App Subnet
+          Key: Name
+
+  DBSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref DBSubnet2CIDR
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: !Select
+        - 1
+        - !GetAZs ""
+      Tags:
+        - Value: !Sub ${EnvironmentName} App Subnet
+          Key: Name
+
+  # --- Security Groups ---
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable lambda functions to access RDS proxy
+      VpcId: !Ref VPC
+
+  AppOutboundRule:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      IpProtocol: tcp
+      GroupId: !Ref AppSecurityGroup
+      DestinationSecurityGroupId: !Ref DBProxySecurityGroup
+      FromPort: 5432
+      ToPort: 5432
+
+  DBProxySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable access to proxy
+      VpcId: !Ref VPC
+
+  DBProxyInboundRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref DBProxySecurityGroup
+      SourceSecurityGroupId: !Ref AppSecurityGroup
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+
+  DBProxyOutboundRule:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref DBProxySecurityGroup
+      DestinationSecurityGroupId: !Ref DBSecurityGroup
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable access to db
+      VpcId: !Ref VPC
+
+  DBSecurityGroupInboundRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref DBSecurityGroup
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !Ref DBProxySecurityGroup
+
+Outputs:
+  VPCId:
+    Value: !Ref VPC
+  # Subnets
+  AppSubnets:
+    Value: !Join [",", [!Ref AppSubnet1]]
+  DBSubnets:
+    Value: !Join [",", [!Ref "DBSubnet1", !Ref "DBSubnet2"]]
+  # Security Groups
+  AppSecurityGroup:
+    Value: !Ref AppSecurityGroup  
+  DBSecurityGroup:
+    Value: !Ref DBSecurityGroup
+  DBProxySecurityGroup:
+    Value: !Ref DBProxySecurityGroup

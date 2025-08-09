@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  RdsUser:
+    Description: Database Master User Name
+    Type: String
+  RdsPassword:
+    Description: Database Master User Password
+    Type: String
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Security group ID for the DB instance
+  DBSubnets:
+    Type: String
+    Description: List of private subnet IDs for the DB subnet group
+
+Resources:
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Rds subnet group
+      SubnetIds: !Split [",", !Ref DBSubnets]
+      
+  DB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: postgres
+      MultiAZ: false
+      MasterUsername: !Ref RdsUser
+      MasterUserPassword: !Ref RdsPassword
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+
+Outputs:
+  DBInstanceName:
+    Value: !Ref DB
+  DBEndpoint:
+    Value: !GetAtt DB.Endpoint.Address
+  DBInstanceArn:
+    Value: !GetAtt DB.DBInstanceArn
