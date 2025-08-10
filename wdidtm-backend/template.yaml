@@ -217,6 +217,34 @@ Resources:
           MyCognitoAuthorizer:
             UserPoolArn: !GetAtt CognitoUserPool.Arn
 
+  postConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/post-confirmation.handler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Handles cognito post confirmation event.
+      Environment:
+        Variables:
+          DB_USERNAME: !Ref RdsUser
+          DB_PASSWORD: !Ref RdsPassword
+          DB_PORT: 5432
+          DB_PROXY_ENDPOINT: !GetAtt DbProxy.Outputs.DBProxyEndpoint
+          DB_NAME: "postgres"
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VPC.Outputs.AppSecurityGroup
+        SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
+      Events:
+        Cognito:
+          Type: Cognito
+          Properties:
+            UserPool: !Ref CognitoUserPool
+            Trigger: PostConfirmation
+
   getUserActivitiesFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -235,7 +263,7 @@ Resources:
           DB_PROXY_ENDPOINT: !GetAtt DbProxy.Outputs.DBProxyEndpoint
           DB_NAME: "postgres"
       VpcConfig:
-        SecurityGroupIds: 
+        SecurityGroupIds:
           - !GetAtt VPC.Outputs.AppSecurityGroup
         SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
       Events:
@@ -245,7 +273,7 @@ Resources:
             RestApiId: !Ref MyApi
             Path: /activities
             Method: GET
-  
+
   successLogsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -264,7 +292,7 @@ Resources:
           DB_PROXY_ENDPOINT: !GetAtt DbProxy.Outputs.DBProxyEndpoint
           DB_NAME: "postgres"
       VpcConfig:
-        SecurityGroupIds: 
+        SecurityGroupIds:
           - !GetAtt VPC.Outputs.AppSecurityGroup
         SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
       Events:
@@ -288,10 +316,10 @@ Resources:
 
   #     Environment:
   #       Variables:
-            # DB_USERNAME: !Ref RdsUser
-            # DB_PASSWORD: !Ref RdsPassword
-            # DB_PORT: 5432
-            # DB_PROXY_ENDPOINT: !GetAtt DBProxy.Outputs.DBProxyEndpoint
+  # DB_USERNAME: !Ref RdsUser
+  # DB_PASSWORD: !Ref RdsPassword
+  # DB_PORT: 5432
+  # DB_PROXY_ENDPOINT: !GetAtt DBProxy.Outputs.DBProxyEndpoint
   #     Events:
   #       Api:
   #         Type: Api
@@ -314,9 +342,9 @@ Resources:
   #     Environment:
   #       Variables:
   #         DB_USERNAME: !Ref RdsUser
-          # DB_PASSWORD: !Ref RdsPassword
-          # DB_PORT: 5432
-          # DB_PROXY_ENDPOINT: !GetAtt DBProxy.Outputs.DBProxyEndpoint
+  # DB_PASSWORD: !Ref RdsPassword
+  # DB_PORT: 5432
+  # DB_PROXY_ENDPOINT: !GetAtt DBProxy.Outputs.DBProxyEndpoint
   #     Events:
   #       Api:
   #         Type: Api
@@ -339,9 +367,9 @@ Resources:
   #     Environment:
   #       Variables:
   #         DB_USERNAME: !Ref RdsUser
-          # DB_PASSWORD: !Ref RdsPassword
-          # DB_PORT: 5432
-          # DB_PROXY_ENDPOINT: !GetAtt DBProxy.Outputs.DBProxyEndpoint
+  # DB_PASSWORD: !Ref RdsPassword
+  # DB_PORT: 5432
+  # DB_PROXY_ENDPOINT: !GetAtt DBProxy.Outputs.DBProxyEndpoint
   #     Events:
   #       Api:
   #         Type: Api
