@@ -1,6 +1,3 @@
-// Create clients and set shared const values outside of the handler.
-
-// Create a DocumentClient that represents the query to add an item
 import { Client } from "pg";
 
 const client = new Client({
@@ -16,7 +13,7 @@ const client = new Client({
 
 await client.connect();
 
-export const getUserActivitiesHandler = async (event) => {
+export const handler = async (event) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type,Authorization",
@@ -60,21 +57,26 @@ export const getUserActivitiesHandler = async (event) => {
     categories.label AS "categoryName",
     categories.color AS "categoryColor",
     categories.icon AS "categoryIcon",
-    json_agg (success_logs.day) successes,
+    COALESCE(
+    json_agg(success_logs.day) FILTER (WHERE success_logs.day IS NOT NULL),
+    '[]'::json
+    ) AS successes,
     activity_logs.target target
 FROM
     users
-    JOIN categories ON users.id = categories.user_ID
+    JOIN categories ON users.id = categories.user_id
     JOIN activities ON categories.id = activities.cat_id
     JOIN activity_logs ON activities.id = activity_logs.activity_id
-    JOIN success_logs ON activity_logs.id = success_logs.activity_log_id
+    LEFT JOIN success_logs ON activity_logs.id = success_logs.activity_log_id
 WHERE
-    users.email = $1 AND activity_logs.year = $2 AND activity_logs.month = $3;
+    users.email = $1 AND activity_logs.year = $2 AND activity_logs.month = $3
 GROUP BY
-    categories.label,
+    activities.id,
     activities.label,
-    activity_logs.year,
-    activity_logs.month;`;
+    categories.label,
+    categories.color,
+    categories.icon,
+    activity_logs.target;`;
     res = await client.query(text, [email, year, month]);
   } catch (err) {
     console.log("Console logged error --->", err);
@@ -88,7 +90,7 @@ GROUP BY
   const response = {
     statusCode: 200,
     headers: corsHeaders,
-    body: res,
+    body: JSON.stringify(res.rows),
   };
 
   // All log statements are written to CloudWatch

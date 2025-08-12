@@ -95,7 +95,7 @@ const fetchActivities = async (
   params.set("month", String(filters.month));
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_ENDPOINT}/activities?${params.toString()}`,
+    `${process.env.NEXT_PUBLIC_API_ENDPOINT}/activity-logs?${params.toString()}`,
     {
       mode: "cors",
       headers: {
