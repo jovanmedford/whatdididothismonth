@@ -325,14 +325,18 @@ Resources:
           - !GetAtt VPC.Outputs.AppSecurityGroup
         SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
       Events:
-        Api:
+        AddSuccessLog:
           Type: Api
           Properties:
             RestApiId: !Ref MyApi
             Path: /success-logs
             Method: POST
-
-
+        DeleteSuccessLog:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /success-logs
+            Method: DELETE
 
   # addCategoryFunction:
   #   Type: AWS::Serverless::Function
