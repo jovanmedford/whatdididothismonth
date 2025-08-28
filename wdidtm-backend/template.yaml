@@ -125,6 +125,16 @@ Resources:
         DBSubnets: !GetAtt VPC.Outputs.DBSubnets
         ProxySecret: !Ref ProxySecret
 
+  SeedInstance:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./templates/seed-instance.yaml
+      Parameters:
+        VpcId: !GetAtt VPC.Outputs.VPCId
+        Subnets: !GetAtt VPC.Outputs.AppSubnets
+        InstanceSecurityGroupId: !GetAtt VPC.Outputs.SeedInstanceSecurityGroup
+        EndpointSecurityGroupId: !GetAtt VPC.Outputs.VPCEndpointsSecurityGroup
+
   # --- Security --
 
   CognitoUserPool:

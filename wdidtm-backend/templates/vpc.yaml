@@ -102,6 +102,15 @@ Resources:
       FromPort: 5432
       ToPort: 5432
 
+  DbProxyFromSeedInstanceRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref DBProxySecurityGroup
+      SourceSecurityGroupId: !Ref SeedInstanceSecurityGroup
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+
   DBProxyOutboundRule:
     Type: AWS::EC2::SecurityGroupEgress
     Properties:
@@ -126,6 +135,41 @@ Resources:
       ToPort: 5432
       SourceSecurityGroupId: !Ref DBProxySecurityGroup
 
+  # SSM Security Groups
+  SeedInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Manages instance access to db and vpc endpoints
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS for SSM and package downloads
+        - IpProtocol: tcp
+          DestinationSecurityGroupId: !Ref DBProxySecurityGroup
+          FromPort: 5432
+          ToPort: 5432
+      Tags:
+        - Key: Name
+          Value: Seed Instance
+
+  VPCEndpointsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Manages access to vpc endpoints
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourceSecurityGroupId: !Ref SeedInstanceSecurityGroup
+          Description: HTTPS from EC2 Instance
+      Tags:
+        - Key: Name
+          Value: SSM VPC Endpoints
+
 Outputs:
   VPCId:
     Value: !Ref VPC
@@ -136,8 +180,12 @@ Outputs:
     Value: !Join [",", [!Ref "DBSubnet1", !Ref "DBSubnet2"]]
   # Security Groups
   AppSecurityGroup:
-    Value: !Ref AppSecurityGroup  
+    Value: !Ref AppSecurityGroup
   DBSecurityGroup:
     Value: !Ref DBSecurityGroup
   DBProxySecurityGroup:
     Value: !Ref DBProxySecurityGroup
+  SeedInstanceSecurityGroup:
+    Value: !Ref SeedInstanceSecurityGroup
+  VPCEndpointsSecurityGroup:
+    Value: !Ref VPCEndpointsSecurityGroup
