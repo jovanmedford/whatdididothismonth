@@ -125,15 +125,15 @@ Resources:
         DBSubnets: !GetAtt VPC.Outputs.DBSubnets
         ProxySecret: !Ref ProxySecret
 
-  SeedInstance:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./templates/seed-instance.yaml
-      Parameters:
-        VpcId: !GetAtt VPC.Outputs.VPCId
-        Subnets: !GetAtt VPC.Outputs.AppSubnets
-        InstanceSecurityGroupId: !GetAtt VPC.Outputs.SeedInstanceSecurityGroup
-        EndpointSecurityGroupId: !GetAtt VPC.Outputs.VPCEndpointsSecurityGroup
+  # SeedInstance:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: ./templates/seed-instance.yaml
+  #     Parameters:
+  #       VpcId: !GetAtt VPC.Outputs.VPCId
+  #       Subnets: !GetAtt VPC.Outputs.AppSubnets
+  #       InstanceSecurityGroupId: !GetAtt VPC.Outputs.SeedInstanceSecurityGroup
+  #       EndpointSecurityGroupId: !GetAtt VPC.Outputs.VPCEndpointsSecurityGroup
 
   # --- Security --
 
@@ -347,6 +347,76 @@ Resources:
             RestApiId: !Ref MyApi
             Path: /success-logs
             Method: DELETE
+
+  InitDbFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/init-db.handler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Creates db tables
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref CognitoUserPool
+          DB_USERNAME: !Ref RdsUser
+          DB_PASSWORD: !Ref RdsPassword
+          DB_PORT: 5432
+          DB_PROXY_ENDPOINT: !GetAtt DbProxy.Outputs.DBProxyEndpoint
+          DB_NAME: "postgres"
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VPC.Outputs.AppSecurityGroup
+        SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
+
+  createUsersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/create-users.handler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Creates Users in Cognito
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref CognitoUserPool
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - "cognito-idp:*"
+              Resource: "*"
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2020
+
+  playgroundFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/playground.handler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Test out db queries and sanity checks
+      Environment:
+        Variables:
+          DB_USERNAME: !Ref RdsUser
+          DB_PASSWORD: !Ref RdsPassword
+          DB_PORT: 5432
+          DB_PROXY_ENDPOINT: !GetAtt DbProxy.Outputs.DBProxyEndpoint
+          DB_NAME: "postgres"
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VPC.Outputs.AppSecurityGroup
+        SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
 
   # addCategoryFunction:
   #   Type: AWS::Serverless::Function

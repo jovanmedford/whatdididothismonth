@@ -4,7 +4,7 @@ import {
   ActivityInput,
   ActivityLogInput,
   SuccessLogInput,
-} from "./seed.js";
+} from "./queries/seed.js";
 
 export const users: UserInput[] = [
   {
