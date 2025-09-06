@@ -1,20 +1,21 @@
 import { ErrorResult, Result, SuccessResult } from "./types";
-import { Client } from "pg";
+import { Client, QueryResultRow } from "pg";
 
-export const executeQuery = async (
+export const executeQuery = async <T extends QueryResultRow>(
   client: Client,
   query: string,
   params?: any[]
-): Promise<Result> => {
+): Promise<Result<T[]>> => {
   try {
-    const result = await client.query(query, params);
-    return { ok: true, data: result };
+    const result = await client.query<T>(query, params);
+
+    return success(result.rows);
   } catch (e) {
     if (e instanceof Error) {
       console.error(e);
-      return { ok: false, message: e.message };
+      return err(e.message);
     }
-    return { ok: false, message: "An unknown error occured" };
+    return err("An unknown error occured");
   }
 };
 
