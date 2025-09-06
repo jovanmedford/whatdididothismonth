@@ -28,5 +28,5 @@ export const handler = async () => {
 
   const result = await client.query("SELECT * FROM USERS;");
 
-  return JSON.stringify(result);
+  return result.rows
 };
