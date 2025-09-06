@@ -13,8 +13,8 @@ export const users: UserInput[] = [
     lastName: "Smith",
   },
   {
-    email: "bob@example.com",
-    firstName: "Bob",
+    email: "bari@example.com",
+    firstName: "Bari",
     lastName: "Johnson",
   },
   {
@@ -28,8 +28,8 @@ export const users: UserInput[] = [
     lastName: "Brown",
   },
   {
-    email: "eve@example.com",
-    firstName: "Eve",
+    email: "evan@example.com",
+    firstName: "Evan",
     lastName: "Davis",
   },
 ];

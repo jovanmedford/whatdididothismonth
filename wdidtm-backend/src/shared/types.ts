@@ -10,6 +10,11 @@ export interface ErrorResult {
   message: string;
 }
 
+export interface User {
+  id: string,
+  email: string
+}
+
 export interface UserInput {
   email: string;
   firstName: string;

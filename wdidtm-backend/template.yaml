@@ -371,19 +371,20 @@ Resources:
           - !GetAtt VPC.Outputs.AppSecurityGroup
         SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
 
-  createUsersFunction:
+  seedUsersFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/create-users.handler
+      Handler: src/handlers/seed-users.handler
       Runtime: nodejs22.x
       Architectures:
         - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: Creates Users in Cognito
+      Description: Creates seed users
       Environment:
         Variables:
           USER_POOL_ID: !Ref CognitoUserPool
+          SEED_DB_FUNCTION_NAME: !Ref SeedDbUsersFunction
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -391,10 +392,44 @@ Resources:
               Action:
                 - "cognito-idp:*"
               Resource: "*"
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - "lambda:InvokeFunction"
+              Resource: "*"
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
         Target: es2020
+
+  SeedDbUsersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/seed-db-users.handler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Creates db tables
+      Environment:
+        Variables:
+          DB_USERNAME: !Ref RdsUser
+          DB_PASSWORD: !Ref RdsPassword
+          DB_PORT: 5432
+          DB_PROXY_ENDPOINT: !GetAtt DbProxy.Outputs.DBProxyEndpoint
+          DB_NAME: "postgres"
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VPC.Outputs.AppSecurityGroup
+        SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2020
+        Loader:
+          - .sql=text
 
   playgroundFunction:
     Type: AWS::Serverless::Function

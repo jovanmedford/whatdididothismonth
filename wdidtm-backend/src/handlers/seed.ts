@@ -1,6 +1,7 @@
 import { executeQuery } from "../shared/utils";
 import { Client } from "pg";
-import createTablesQuery from "@queries/init.sql";
+import insertCategoryQuery from "@queries/insert-category.sql";
+import { User } from "../shared/types";
 
 let client: Client | null = null;
 
@@ -28,11 +29,16 @@ const getDbClient = async () => {
 export const handler = async () => {
   let client = await getDbClient();
 
-  const tablesResult = await executeQuery(client, createTablesQuery);
 
-  if (!tablesResult.ok) {
-    return tablesResult.message;
+  const categoryResult = await executeQuery(client, insertCategoryQuery, );
+
+  if (!categoryResult.ok) {
+    return categoryResult.message;
   }
 
   return "Success!";
 };
+
+let users: User[] = [
+    {}
+]
