@@ -312,6 +312,10 @@ Resources:
             RestApiId: !Ref MyApi
             Path: /activity-logs
             Method: POST
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2020
 
   successLogsFunction:
     Type: AWS::Serverless::Function

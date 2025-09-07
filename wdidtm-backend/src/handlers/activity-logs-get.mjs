@@ -52,6 +52,7 @@ export const handler = async (event) => {
   let res;
   try {
     let text = `SELECT
+    activity_logs.id AS "id",
     activities.id AS "activityId",
     activities.label AS "activityName",
     categories.label AS "categoryName",
@@ -71,6 +72,7 @@ FROM
 WHERE
     users.email = $1 AND activity_logs.year = $2 AND activity_logs.month = $3
 GROUP BY
+    activity_logs.id,
     activities.id,
     activities.label,
     categories.label,
@@ -90,7 +92,7 @@ GROUP BY
   const response = {
     statusCode: 200,
     headers: corsHeaders,
-    body: JSON.stringify(res.rows),
+    body: JSON.stringify(res.rows)
   };
 
   // All log statements are written to CloudWatch

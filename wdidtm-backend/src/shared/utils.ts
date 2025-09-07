@@ -1,13 +1,13 @@
 import { ErrorResult, Result, SuccessResult } from "./types";
-import { Client, QueryResultRow } from "pg";
+import { Client } from "pg";
 
-export const executeQuery = async <T extends QueryResultRow>(
+export const executeQuery = async <T>(
   client: Client,
   query: string,
   params?: any[]
 ): Promise<Result<T[]>> => {
   try {
-    const result = await client.query<T>(query, params);
+    const result = await client.query<T[]>(query, params);
 
     return success(result.rows);
   } catch (e) {
@@ -24,3 +24,21 @@ export const err = (error: string | Error): ErrorResult => ({
   ok: false,
   message: typeof error === "string" ? error : error.message,
 });
+
+export const createInputValidator = <T>(params: (keyof T)[]) => {
+  return (input: T) => {
+    let missing = [];
+
+    for (let param of params) {
+      if (input[param] == null) {
+        missing.push(param);
+      }
+    }
+
+    if (missing.length > 0) {
+      return err(`Missing the following: ${missing.join(",")}`);
+    }
+
+    return success(null);
+  };
+};

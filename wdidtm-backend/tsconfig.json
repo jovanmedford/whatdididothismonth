@@ -6,14 +6,16 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
-    "target": "esnext",
-    "types": [],
-
+    "target": "ES2018",
+    "module": "commonjs",
+    "lib": ["es2018"],
+    "types": ["jest"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "allowSyntheticDefaultImports": true,
+
 
     "paths": {
       "@queries/*": ["./queries/*"]
