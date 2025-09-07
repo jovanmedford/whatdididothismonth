@@ -20,7 +20,7 @@ const ActivityService: Service<Activity, ActivityInput> = {
       dbClient,
       `SELECT * FROM activities 
        JOIN categories ON activities.cat_id = categories.id
-       WHERE categores.user_id = $1;`,
+       WHERE categories.user_id = $1;`,
       [userId]
     );
   },

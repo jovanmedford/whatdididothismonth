@@ -255,6 +255,72 @@ Resources:
             UserPool: !Ref CognitoUserPool
             Trigger: PostConfirmation
 
+  ActivityFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/activity.handler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Get activities by user / category.
+      Environment:
+        Variables:
+          DB_USERNAME: !Ref RdsUser
+          DB_PASSWORD: !Ref RdsPassword
+          DB_PORT: 5432
+          DB_PROXY_ENDPOINT: !GetAtt DbProxy.Outputs.DBProxyEndpoint
+          DB_NAME: "postgres"
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VPC.Outputs.AppSecurityGroup
+        SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /activity
+            Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2020
+
+  CategoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/category.handler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Get categories by user.
+      Environment:
+        Variables:
+          DB_USERNAME: !Ref RdsUser
+          DB_PASSWORD: !Ref RdsPassword
+          DB_PORT: 5432
+          DB_PROXY_ENDPOINT: !GetAtt DbProxy.Outputs.DBProxyEndpoint
+          DB_NAME: "postgres"
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VPC.Outputs.AppSecurityGroup
+        SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /category
+            Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2020
+
   getActivityLogsFunction:
     Type: AWS::Serverless::Function
     Properties:
