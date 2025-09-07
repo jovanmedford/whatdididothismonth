@@ -32,8 +32,6 @@ export const handler = async (event) => {
     "Access-Control-Allow-Methods": "POST,OPTIONS",
   };
 
-  let client = await getDbClient();
-
   const input = JSON.parse(event.body);
 
   let validatorRes = ActivityLogService.validateInput(input);
@@ -44,6 +42,8 @@ export const handler = async (event) => {
       body: JSON.stringify({ error: validatorRes.message }),
     };
   }
+
+  let client = await getDbClient();
 
   const userId = event.requestContext.authorizer.claims.sub;
 
