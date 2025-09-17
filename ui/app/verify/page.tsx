@@ -6,7 +6,7 @@ import {
   useForm,
 } from "react-hook-form";
 import Button from "../_components/button/button";
-import TextInput from "../_components/form/text-input";
+import TextInput from "../_components/form/input";
 import { autoSignIn, confirmSignUp } from "aws-amplify/auth";
 import { showNotification } from "../_components/toast/toast";
 import { useRouter } from "next/navigation";

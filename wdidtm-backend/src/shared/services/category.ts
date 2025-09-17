@@ -13,7 +13,7 @@ const CategoryService: Service<Category, CategoryInput> = {
   async getByUser(dbClient, userId) {
     return await executeQuery(
       dbClient,
-      `SELECT * FROM categories WHERE user_id = $2;`,
+      `SELECT * FROM categories WHERE user_id = $1;`,
       [userId]
     );
   },

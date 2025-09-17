@@ -1,6 +1,6 @@
-import { Activity } from "@/app/_types/types";
+import { ActivityLog } from "@/app/_types/types";
 import { render, screen } from "@testing-library/react";
-import ActivityForm from "./activtiy-form";
+import ActivityForm from "./activity-form";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { FC, ReactNode } from "react";
 

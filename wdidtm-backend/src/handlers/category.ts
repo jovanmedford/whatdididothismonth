@@ -1,5 +1,5 @@
 import { Client } from "pg";
-import CategoryService from "../shared/services/activity";
+import CategoryService from "../shared/services/category";
 import { NO_CLIENT_MESSAGE } from "../shared/errors.mjs";
 
 let client: Client | null = null;

@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS categories (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) NOT NULL,
+    user_id UUID REFERENCES users(id) NOT NULL ON DELETE CASCADE,
     label varchar(255) NOT NULL,
     color varchar(255) NOT NULL,
     icon varchar(255) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS categories (
 CREATE TABLE IF NOT EXISTS activities (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     label varchar(255) NOT NULL,
-    cat_id UUID REFERENCES categories(id) NOT NULL,
+    cat_id UUID REFERENCES categories(id) NOT NULL ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT NOW(),
     last_updated TIMESTAMP DEFAULT NOW(),
     UNIQUE(cat_id, label)
@@ -33,12 +33,12 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     month int NOT NULL,
     year int NOT NULL,
     target int NOT NULL,
-    activity_id UUID REFERENCES activities(id) NOT NULL,
+    activity_id UUID REFERENCES activities(id) NOT NULL ON DELETE CASCADE,
     UNIQUE(activity_id, year, month)
 );
 
 CREATE TABLE IF NOT EXISTS success_logs (
-    activity_log_id UUID REFERENCES activity_logs(id) NOT NULL,
+    activity_log_id UUID REFERENCES activity_logs(id) NOT NULL ON DELETE CASCADE,
     day int NOT NULL,
     PRIMARY KEY(activity_log_id, day),
     UNIQUE(activity_log_id, day)

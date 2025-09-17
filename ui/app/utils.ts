@@ -76,3 +76,13 @@ export const generateArray = (start: number, end: number) => {
   }
   return arr;
 };
+
+// https://stackoverflow.com/questions/1184334/get-number-days-in-a-specified-month-using-javascript
+export const daysInMonth = (month: number, year: number) => {
+    return new Date(year, month + 1, 0).getDate();
+}
+
+export const daysThisMonth = () => {
+  let date = new Date()
+  return daysInMonth(date.getMonth(), date.getFullYear())
+}

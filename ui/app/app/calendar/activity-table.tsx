@@ -1,38 +1,38 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { generateArray } from "@/app/utils";
+import { daysInMonth, generateArray } from "@/app/utils";
 import { Filters, useFilterContext } from "./filter-context";
-import {
-  AuthSession,
-  fetchAuthSession,
-  getCurrentUser,
-} from "aws-amplify/auth";
+import { AuthSession, fetchAuthSession } from "aws-amplify/auth";
 import { showNotification } from "@/app/_components/toast/toast";
-import { Activity } from "@/app/_types/types";
+import { ActivityLog, Category } from "@/app/_types/types";
+import { useAuthSession } from "@/app/_hooks/use-auth-session";
 
-const addSuccess = async ({
-  activity,
-  successIndex,
-}: {
-  activity: Activity;
-  successIndex: number;
-}) => {
-  return {};
-};
+const DateSquares = ({ activity }: { activity: ActivityLog }) => {
 
-const DateSquares = ({ activity }: { activity: Activity }) => {
-  let indices = generateArray(0, 31);
   const { filters } = useFilterContext();
+  let {month, year} = filters
+    let indices = generateArray(0, daysInMonth(month, year));
   let successSet = new Set(activity.successes);
 
   const queryClient = useQueryClient();
 
+  let { data: session, status: testStatus } = useQuery<AuthSession>({
+    queryKey: ["session"],
+    queryFn: async () => await fetchAuthSession(),
+  });
+
   let mutation = useMutation({
-    mutationFn: addSuccess,
+    mutationFn: ({ day, session }: { day: number; session?: AuthSession }) =>
+      toggleSuccess(!successSet.has(day), activity.id, day, session),
     onSuccess: () => {
       return queryClient.invalidateQueries({
-        queryKey: ["activties", filters.year, filters.month, activity.activityId],
+        queryKey: [
+          "activties",
+          filters.year,
+          filters.month,
+          activity.activityId,
+        ],
       });
     },
     onError: (e) => {
@@ -50,6 +50,7 @@ const DateSquares = ({ activity }: { activity: Activity }) => {
       {indices.map((index) => (
         <label
           key={`${activity}-${index}`}
+          onClick={() => mutation.mutate({ day: index, session })}
           className="checkbox-parent flex justify-center w-6"
         >
           {index}
@@ -66,10 +67,11 @@ const DateSquares = ({ activity }: { activity: Activity }) => {
   );
 };
 
-const Row = ({ activity }: { activity: Activity }) => {
+const Row = ({ activity }: { activity: ActivityLog }) => {
   return (
     <tr tabIndex={0} className="h-20 border-b-1">
-      <th className="w-6/12 md:w-4/12 border-r-1">
+      <th className="w-6/12 md:w-4/12 border-r-1 px-1">
+        <Pill label={activity.categoryName} color={activity.categoryColor} />
         {activity.activityName}
         <span className="text-xs font-normal">(0/{activity.target})</span>
       </th>
@@ -80,12 +82,8 @@ const Row = ({ activity }: { activity: Activity }) => {
   );
 };
 
-const fetchActivities = async (
-  filters: Filters,
-  session?: AuthSession,
-  userId?: string
-) => {
-  if (!userId || !session || !session.tokens?.idToken) {
+const fetchActivities = async (filters: Filters, token?: string) => {
+  if (!token) {
     console.log("Not signed in");
     return [];
   }
@@ -95,11 +93,13 @@ const fetchActivities = async (
   params.set("month", String(filters.month));
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_ENDPOINT}/activity-logs?${params.toString()}`,
+    `${
+      process.env.NEXT_PUBLIC_API_ENDPOINT
+    }/activity-logs?${params.toString()}`,
     {
       mode: "cors",
       headers: {
-        Authorization: session.tokens.idToken.toString(),
+        Authorization: token,
         "Content-Type": "application/x-www-form-urlencoded",
       },
     }
@@ -112,25 +112,43 @@ const fetchActivities = async (
   return response.json();
 };
 
+const toggleSuccess = async (
+  shouldAdd: boolean,
+  activityLogId: string,
+  day: number,
+  session?: AuthSession
+) => {
+  if (!session || !session.tokens?.idToken) {
+    console.log("Not signed in");
+    return [];
+  }
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_ENDPOINT}/success-logs`,
+    {
+      mode: "cors",
+      method: shouldAdd ? "POST" : "DELETE",
+      headers: {
+        Authorization: session.tokens.idToken.toString(),
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: JSON.stringify({ activityLogId, day }),
+    }
+  );
+
+  if (!response.ok) {
+    throw Error;
+  }
+};
+
 export default function ActivityTable() {
   const { filters } = useFilterContext();
-
-  let { data: session, status: testStatus } = useQuery<AuthSession>({
-    queryKey: ["session"],
-    queryFn: async () => await fetchAuthSession(),
-  });
-
-  const { data: userData } = useQuery({
-    queryKey: ["currentUser"],
-    queryFn: getCurrentUser,
-  });
-
-  const userId = userData?.userId;
+  const { token } = useAuthSession();
 
   const { status, data, error } = useQuery({
-    queryKey: ["activties", filters.year, filters.month, userData?.userId],
-    queryFn: () => fetchActivities(filters, session, userId),
-    enabled: !!userId,
+    queryKey: ["activties", filters.year, filters.month],
+    queryFn: () => fetchActivities(filters, token),
+    enabled: !!token,
   });
 
   if (status === "pending") {
@@ -145,7 +163,7 @@ export default function ActivityTable() {
     <table className="w-full">
       <tbody>
         {Array.isArray(data) && data.length > 0 ? (
-          data.map((activity: Activity) => (
+          data.map((activity: ActivityLog) => (
             <Row key={`${activity.activityId}`} activity={activity}></Row>
           ))
         ) : (
@@ -159,3 +177,14 @@ export default function ActivityTable() {
     </table>
   );
 }
+
+const Pill = ({ color, label }: Category) => {
+  return (
+    <span
+      className="font-normal px-1 py-0.5 text-xs"
+      style={{ background: color }}
+    >
+      {label}
+    </span>
+  );
+};

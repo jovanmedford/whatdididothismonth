@@ -1,18 +1,18 @@
 import { InputHTMLAttributes } from "react";
 import { FieldError } from "react-hook-form";
 
-interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: FieldError;
 }
 
-export default function TextInput({
+export default function Input({
   label,
   type,
   className,
   error,
   ...props
-}: TextInputProps) {
+}: InputProps) {
   return (
     <>
       <label className="w-full block">

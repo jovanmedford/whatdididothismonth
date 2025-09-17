@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "../_components/button/button";
-import TextInput from "../_components/form/text-input";
+import TextInput from "../_components/form/input";
 import { Amplify } from "aws-amplify";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import Image from "next/image";

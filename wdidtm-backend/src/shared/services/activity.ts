@@ -18,7 +18,7 @@ const ActivityService: Service<Activity, ActivityInput> = {
   async getByUser(dbClient, userId) {
     return await executeQuery(
       dbClient,
-      `SELECT * FROM activities 
+      `SELECT activities.id id, activities.label label FROM activities 
        JOIN categories ON activities.cat_id = categories.id
        WHERE categories.user_id = $1;`,
       [userId]
@@ -26,9 +26,9 @@ const ActivityService: Service<Activity, ActivityInput> = {
   },
 
   async getByCategory(dbClient, categoryId) {
-        return await executeQuery(
+    return await executeQuery(
       dbClient,
-      `SELECT * FROM activities WHERE cat_id = $1;`,
+      `SELECT  activities.id id, activities.label label FROM activities WHERE cat_id = $1;`,
       [categoryId]
     );
   },

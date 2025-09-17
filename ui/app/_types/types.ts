@@ -1,4 +1,5 @@
-export interface Activity {
+export interface ActivityLog {
+  id: string;
   activityId: string;
   activityName: string;
   categoryName?: string;
@@ -9,8 +10,14 @@ export interface Activity {
   successes: number[];
 }
 
+export interface Activity {
+  id: string,
+  label: string
+}
+
 export interface Category {
-  name: string;
+  id: string;
+  label: string;
   color: string;
   icon: string;
 }

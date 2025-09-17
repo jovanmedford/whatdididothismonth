@@ -54,7 +54,7 @@ export const handler = async (event) => {
 
   const categoryId =
     params && params.categoryId
-      ? JSON.parse(event.queryStringParameters).categoryId
+      ? event.queryStringParameters.categoryId
       : null;
 
   const userId = event.requestContext.authorizer.claims.sub;
