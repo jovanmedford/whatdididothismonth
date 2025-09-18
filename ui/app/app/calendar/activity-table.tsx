@@ -70,7 +70,7 @@ const Row = ({ activity }: { activity: ActivityLog }) => {
   return (
     <tr tabIndex={0} className="h-20 border-b-1">
       <th className="w-6/12 md:w-4/12 border-r-1 px-1">
-        <Pill label={activity.categoryName} color={activity.categoryColor} />
+        {/* <Pill label={activity.categoryName} color={activity.categoryColor} /> */}
         {activity.activityName}
         <span className="text-xs font-normal">(0/{activity.target})</span>
       </th>
