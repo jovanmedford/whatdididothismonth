@@ -217,7 +217,7 @@ Resources:
     Properties:
       StageName: Prod
       Cors:
-        AllowMethods: "'OPTIONS, GET'"
+        AllowMethods: "'OPTIONS, GET, POST, DELETE'"
         AllowHeaders: "'Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Origin,Content-Type,Authorization'"
         AllowOrigin: "'*'"
       Auth:
@@ -386,7 +386,7 @@ Resources:
   successLogsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/success-logs.successLogsHandler
+      Handler: src/handlers/success-logs.handler
       Runtime: nodejs22.x
       Architectures:
         - x86_64
@@ -417,6 +417,10 @@ Resources:
             RestApiId: !Ref MyApi
             Path: /success-logs
             Method: DELETE
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2020
 
   InitDbFunction:
     Type: AWS::Serverless::Function

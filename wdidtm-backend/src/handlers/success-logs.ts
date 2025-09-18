@@ -1,28 +1,35 @@
-// Create clients and set shared const values outside of the handler.
-
-// Create a DocumentClient that represents the query to add an item
 import { Client } from "pg";
 import Guard from "../shared/guard.mjs";
-import SuccessLog from "../shared/success-log.mjs";
+import SuccessLog from "../shared/services/success-log";
 
-const client = new Client({
-  user: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-  host: process.env.DB_PROXY_ENDPOINT,
-  database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: true,
-  },
-});
+let client: Client | null = null;
 
-await client.connect();
+const getDbClient = async () => {
+  if (client) {
+    return client;
+  }
 
-export const successLogsHandler = async (event) => {
+  client = new Client({
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    port: Number(process.env.DB_PORT || 5432),
+    host: process.env.DB_PROXY_ENDPOINT,
+    database: process.env.DB_NAME,
+    ssl: {
+      rejectUnauthorized: true,
+    },
+  });
+
+  await client.connect();
+
+  return client;
+};
+
+export const handler = async (event) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type,Authorization",
-    "Access-Control-Allow-Methods": "GET,OPTIONS",
+    "Access-Control-Allow-Methods": "POST,DELETE,OPTIONS",
   };
 
   if (event.httpMethod !== "POST" && event.httpMethod !== "DELETE") {
@@ -40,6 +47,8 @@ export const successLogsHandler = async (event) => {
       body: JSON.stringify({ error: "Missing required parameters." }),
     };
   }
+
+  let client = await getDbClient();
 
   console.info("received:", event);
 
@@ -65,7 +74,7 @@ export const successLogsHandler = async (event) => {
 
   switch (event.httpMethod) {
     case "POST": {
-      let res = await SuccessLog.create(activityLogId, day, client);
+      let res = await SuccessLog.create(client, { day }, activityLogId);
       if (res.ok) {
         return {
           statusCode: 200,
@@ -80,7 +89,7 @@ export const successLogsHandler = async (event) => {
       };
     }
     case "DELETE": {
-      let res = await SuccessLog.delete(activityLogId, day, client);
+      let res = await SuccessLog.delete!(client, { day }, activityLogId);
       if (res.ok) {
         return {
           statusCode: 200,

@@ -74,7 +74,7 @@ export default function ActivityForm({ onCancel }: { onCancel }) {
 
       return queryClient.invalidateQueries({
         queryKey: [
-          "activties",
+          "activityLogs",
           filterState.filters.year,
           filterState.filters.month,
         ],

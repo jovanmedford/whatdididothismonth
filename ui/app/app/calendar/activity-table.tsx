@@ -28,10 +28,9 @@ const DateSquares = ({ activity }: { activity: ActivityLog }) => {
     onSuccess: () => {
       return queryClient.invalidateQueries({
         queryKey: [
-          "activties",
+          "activityLogs",
           filters.year,
-          filters.month,
-          activity.activityId,
+          filters.month
         ],
       });
     },
@@ -123,6 +122,8 @@ const toggleSuccess = async (
     return [];
   }
 
+  console.log(shouldAdd, day)
+
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_ENDPOINT}/success-logs`,
     {
@@ -146,7 +147,7 @@ export default function ActivityTable() {
   const { token } = useAuthSession();
 
   const { status, data, error } = useQuery({
-    queryKey: ["activties", filters.year, filters.month],
+    queryKey: ["activityLogs", filters.year, filters.month],
     queryFn: () => fetchActivities(filters, token),
     enabled: !!token,
   });
