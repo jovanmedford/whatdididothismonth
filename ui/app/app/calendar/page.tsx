@@ -68,7 +68,7 @@ const MonthSelector = () => {
           <label
             key={index}
             className={`${
-              filters.month === index ? "bg-peach-100" : ""
+              filters.month === index ? "bg-secondary-100 text-white" : ""
             } block rounded-3xl px-3 py-1 focus:outline-2 radio-parent`}
           >
             {month}
@@ -90,17 +90,18 @@ const SidePanel = () => {
 
   return (
     <>
-      <button
+      <Button
         onClick={() => setShow(true)}
-        className="rounded-full text-white bg-primary-500 fixed bottom-4 right-4 py-1 px-4 hover:cursor-pointer"
+        className="text-white bg-primary-500 fixed bottom-16 right-8 py-1 px-4 hover:cursor-pointer"
+        variant="emphasized"
       >
-        <span className="text-3xl">+</span>
-      </button>
+        Do something else this month
+      </Button>
       {show ? (
         <section
           className={`${
             show ? "block" : "hidden"
-          } fixed z-10 right-0 py-12 px-20 top-0 bottom-0 bg-beige-100 rounded-l-3xl shadow-xl`}
+          } fixed z-10 right-0 py-12 px-20 top-0 bottom-0 bg-primary-100 rounded-l-3xl shadow-xl`}
         >
           <h2 className="text-xl font-bold mb-8">Add a New Activity</h2>
           <ActivityForm onCancel={() => setShow(false)}/>
