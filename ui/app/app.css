@@ -1,32 +1,18 @@
 @import "tailwindcss";
 
-:root {
-  --color-neutral: #f0f0f0;
-  --color-neutral-hover: #dfdfdf;
-  --color-secondary: var(--color-peach-100);
-  --color-deep-blue-900: #1c2a3b;
-  --color-deep-blue-700: #355070;
-  --color-deep-blue-500: #4f79ab;
-  --color-deep-blue-300: #88ccf1;
-  --color-deep-blue-100: #dbeffb;
-}
-
 @theme static {
-  --color-beige-100: #fff7f3;
-  --color-beige-500: #f8e6dd;
-  --color-deep-blue-500: #355070;
-  --color-primary-900: var(--color-deep-blue-900);
-  --color-primary-700: var(--color-deep-blue-700);
-  --color-primary-500: var(--color-deep-blue-500);
-  --color-primary-300: var(--color-deep-blue-300);
-  --color-primary-100: var(--color-deep-blue-100);
+  --color-primary-900: #1c2a3b;
+  --color-primary-500: #003F88;
+  --color-primary-300: #88ccf1;
+  --color-primary-100: #F1F3FE;
+  --color-secondary-100: #8d6788;
+  --color-secondary-300: #8E9AEF;
+  --color-secondary-500: #815e86;
+  --color-text: #1C1B20;
   --color-neutral: #f0f0f0;
-  --color-peach-100: #f8e6dd;
-  --color-success: #007a49;
-  --color-success-light: #d6ffef;
-  --color-error: #9b466d;
-  --color-error-light: #ffe3f0;
-  --color-gray-400: #29394B
+  --color-success: #5BA86D;
+  --color-warning: #F4A261;
+  --color-error: #E63946;
 }
 
 * {
@@ -66,5 +52,6 @@ input[type="checkbox"] {
 }
 
 .checkbox-parent:has(input:checked) {
-  background-color: var(--color-peach-100);
+  background-color: var(--color-secondary-100);
+  color: var(--color-secondary-100);
 }
