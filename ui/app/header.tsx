@@ -1,8 +1,6 @@
 "use client";
-
-import { useQuery } from "@tanstack/react-query";
-import { getCurrentUser } from "aws-amplify/auth";
 import Link from "next/link";
+import { useAuthSession } from "./_hooks/use-auth-session";
 
 const LoginSignupLinks = () => {
   return (
@@ -17,16 +15,13 @@ const CalendarLink = () => {
 };
 
 export default function Header() {
-  const { status, data } = useQuery({
-    queryKey: ["currentUser"],
-    queryFn: getCurrentUser,
-  });
+  const { token, sessionStatus } = useAuthSession();
 
   return (
     <header className="flex justify-between px-4 py-8">
       <p>What Did I Do This Month?</p>
-      {status != "pending" ? (
-        data ? (
+      {sessionStatus != "pending" ? (
+        token ? (
           <CalendarLink />
         ) : (
           <LoginSignupLinks />
