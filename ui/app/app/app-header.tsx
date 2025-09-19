@@ -10,15 +10,17 @@ export default function AppHeader() {
   const mutation = useMutation({
     mutationFn: async () => await signOut(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
+      queryClient.clear();
       router.push("/");
     },
-    onError: () =>
+    onError: () => {
+      queryClient.clear();
       showNotification({
         title: "Error",
         type: "error",
         description: "Error logging out.",
-      }),
+      });
+    },
   });
 
   let { data, status } = useQuery({

@@ -8,8 +8,21 @@ export const useAuthSession = () => {
     error: sessionError,
   } = useQuery<AuthSession>({
     queryKey: ["session"],
-    queryFn: async () => await fetchAuthSession(),
+    queryFn: async () => {
+      const result = await fetchAuthSession();
+
+      if (!result.tokens?.idToken) {
+        throw Error("");
+      }
+
+      return result;
+    },
   });
 
-  return { session, sessionStatus, sessionError, token: session?.tokens?.idToken?.toString() };
+  return {
+    session,
+    sessionStatus,
+    sessionError,
+    token: session?.tokens?.idToken?.toString(),
+  };
 };
