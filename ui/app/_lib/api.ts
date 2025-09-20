@@ -1,4 +1,3 @@
-import { json } from "stream/consumers";
 import { Activity, Category } from "../_types/types";
 
 /**
@@ -61,8 +60,8 @@ export const fetchActivities = async (
 };
 
 export const createActivityLog = async (
-  idToken?: string,
-  activityLogInput: any
+  activityLogInput: any,
+  idToken?: string
 ) => {
   if (!idToken) {
     console.error("Not logged in.");
@@ -77,7 +76,7 @@ export const createActivityLog = async (
         Authorization: idToken,
       },
       method: "POST",
-      body: JSON.stringify(activityLogInput)
+      body: JSON.stringify(activityLogInput),
     }
   );
 
