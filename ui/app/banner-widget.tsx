@@ -10,7 +10,7 @@ export default function BannerWidget() {
 
   return (
     <div>
-      <p className="flex 8 mb-8">
+      <p className="flex mb-8 flex-wrap">
         I want to
         <span className="border-b-primary-500 border-b-2">
           <Select
@@ -18,10 +18,11 @@ export default function BannerWidget() {
             onChange={(e) => setVisibleGrid(e.target.value)}
           ></Select>
         </span>{" "}
-        at least 
+        at least
         <span className="mx-1 font-bold">
           {logs[gridIndex].target} {logUnit}
-        </span>  this month.
+        </span>{" "}
+        this month.
       </p>
       <ul className="overflow-hidden">
         {logs.map((log) => (
@@ -65,11 +66,11 @@ const ProgressItem = ({
   }
 
   return (
-    <li>
+    <li className={isVisible ? "block" : "hidden"}>
       <ProgressGrid
         activity={{ id: log.activityId, label: log.activityName }}
         numOfDays={7}
-        className={`flex gap-x-5 ${!isVisible ? "w-0 h-0 overflow-hidden" : ""}`}
+        className={`flex gap-x-5 gap-y-4 flex-wrap`}
         successes={successes}
         onToggleSuccess={handleToggle}
       />
@@ -85,7 +86,12 @@ const Select = ({
   onChange: ChangeEventHandler<HTMLSelectElement>;
 }) => {
   return (
-    <select className="truncate" name="activity" onChange={onChange} value={value}>
+    <select
+      className="truncate"
+      name="activity"
+      onChange={onChange}
+      value={value}
+    >
       {logs.map((log) => (
         <option key={log.id} value={log.id}>
           {log.activityName}
