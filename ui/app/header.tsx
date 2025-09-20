@@ -18,7 +18,7 @@ export default function Header() {
   const { token, sessionStatus } = useAuthSession();
 
   return (
-    <header className="flex justify-between px-4 py-8">
+    <header className="flex justify-between py-8 max-w-xxl w-10/12 mx-auto">
       <p>What Did I Do This Month?</p>
       {sessionStatus != "pending" ? (
         token ? (

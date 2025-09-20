@@ -1,13 +1,16 @@
 import "./app.css";
-import MainBanner from "./main-banner";
+import Banner from "./banner";
 import Header from "./header";
+import Section from "./section";
 
 export default function App() {
   return (
     <>
       <Header />
       <main>
-        <MainBanner />
+        <Section>
+          <Banner />
+        </Section>
       </main>
     </>
   );
