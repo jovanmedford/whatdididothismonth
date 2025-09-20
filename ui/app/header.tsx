@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useAuthSession } from "./_hooks/use-auth-session";
+import Logo from "./_components/logo/logo";
 
 const LoginSignupLinks = () => {
   return (
@@ -18,8 +19,8 @@ export default function Header() {
   const { token, sessionStatus } = useAuthSession();
 
   return (
-    <header className="flex justify-between py-8 max-w-xxl w-11/12 md:w-10/12 mx-auto">
-      <p>What Did I Do This Month?</p>
+    <header className="flex justify-between items-center py-8 max-w-xxl w-11/12 md:w-10/12 mx-auto">
+      <Logo />
       {sessionStatus != "pending" ? (
         token ? (
           <CalendarLink />
