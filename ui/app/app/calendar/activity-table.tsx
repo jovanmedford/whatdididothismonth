@@ -9,10 +9,9 @@ import { ActivityLog, Category } from "@/app/_types/types";
 import { useAuthSession } from "@/app/_hooks/use-auth-session";
 
 const DateSquares = ({ activity }: { activity: ActivityLog }) => {
-
   const { filters } = useFilterContext();
-  let {month, year} = filters
-    let indices = generateArray(0, daysInMonth(month, year));
+  let { month, year } = filters;
+  let indices = generateArray(0, daysInMonth(month, year));
   let successSet = new Set(activity.successes);
 
   const queryClient = useQueryClient();
@@ -27,11 +26,7 @@ const DateSquares = ({ activity }: { activity: ActivityLog }) => {
       toggleSuccess(!successSet.has(day), activity.id, day, session),
     onSuccess: () => {
       return queryClient.invalidateQueries({
-        queryKey: [
-          "activityLogs",
-          filters.year,
-          filters.month
-        ],
+        queryKey: ["activityLogs", filters.year, filters.month],
       });
     },
     onError: (e) => {
@@ -122,7 +117,7 @@ const toggleSuccess = async (
     return [];
   }
 
-  console.log(shouldAdd, day)
+  console.log(shouldAdd, day);
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_ENDPOINT}/success-logs`,

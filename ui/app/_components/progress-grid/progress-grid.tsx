@@ -44,7 +44,7 @@ export default function ProgressGrid({
   }
 
   return (
-    <ul className={`flex flex-wrap gap-4 ${className ?? ""}`}>
+    <ul className={`${className ?? ""}`}>
       {days.map((day) => (
         <ProgressSquare
           key={day}
