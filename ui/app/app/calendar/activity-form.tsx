@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm, Controller, FieldError } from "react-hook-form";
-import { Combobox, Item } from "@/app/_components/form/combobox";
+import { useForm, FieldError } from "react-hook-form";
+import { Combobox } from "@/app/_components/form/combobox";
 import { useAuthSession } from "@/app/_hooks/use-auth-session";
 import Button from "@/app/_components/button/button";
 import * as helpers from "./combobox-helpers";
@@ -13,12 +13,10 @@ import { useState } from "react";
 import Input from "@/app/_components/form/input";
 import { useFilterContext } from "./filter-context";
 import { showNotification } from "@/app/_components/toast/toast";
-import { ColorResult, ChromePicker } from "react-color";
-import { Activity, Category } from "@/app/_types/types";
-import { error } from "console";
+import { ChromePicker } from "react-color";
 import { daysInMonth } from "@/app/utils";
 
-export default function ActivityForm({ onCancel }: { onCancel }) {
+export default function ActivityForm({ onCancel }: { onCancel: () => void }) {
   const [isNewActivity, setIsNewActivity] = useState<boolean>(false);
   const [isNewCategory, setIsNewACategory] = useState<boolean>(false);
   const [showSketch, setShowSketch] = useState<boolean>(false);
@@ -48,7 +46,7 @@ export default function ActivityForm({ onCancel }: { onCancel }) {
   });
 
   const mutation = useMutation({
-    mutationFn: (obj: ActivityLogInput) => createActivityLog(token, obj),
+    mutationFn: (obj: ActivityLogInput) => createActivityLog(obj, token),
     onError: (e) => {
       showNotification({
         type: "error",
@@ -86,7 +84,7 @@ export default function ActivityForm({ onCancel }: { onCancel }) {
     setShowSketch(true);
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: ActivityLogForm) => {
     let activity = activities.find((item) => item.label == activityLabel);
     let category = categories.find((item) => item.label == categoryLabel);
 
@@ -182,9 +180,7 @@ export default function ActivityForm({ onCancel }: { onCancel }) {
       />
       <FieldErrorMessage err={errors.targetValue} />
       <div className="flex flex-col mt-8 gap-4">
-        <Button onClick={onSubmit} variant="emphasized">
-          Save
-        </Button>
+        <Button variant="emphasized">Save</Button>
         <Button type="button" onClick={onCancel}>
           Cancel
         </Button>

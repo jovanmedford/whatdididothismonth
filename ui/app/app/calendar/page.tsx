@@ -5,15 +5,9 @@ import AppHeader from "../app-header";
 import ActivityTable from "./activity-table";
 import { months } from "./data";
 import { FilterContext, Filters, useFilterContext } from "./filter-context";
-import TextInput from "@/app/_components/form/input";
 import Button from "@/app/_components/button/button";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Schema } from "@/amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getCurrentUser } from "aws-amplify/auth";
-import { showNotification } from "@/app/_components/toast/toast";
-import { ActivityLog } from "@/app/_types/types";
 import ActivityForm from "./activity-form";
 
 const client = generateClient<Schema>();
