@@ -9,8 +9,8 @@ export default function BannerWidget() {
   const logUnit = logs[gridIndex].target > 1 ? "times" : "time";
 
   return (
-    <div>
-      <p className="flex mb-8 flex-wrap">
+    <div className="mb-12">
+      <p className="flex mb-8 flex-wrap justify-center">
         I want to
         <span className="border-b-primary-500 border-b-2">
           <Select
@@ -24,7 +24,7 @@ export default function BannerWidget() {
         </span>{" "}
         this month.
       </p>
-      <ul className="overflow-hidden">
+      <ul className="overflow-hidden justify-center">
         {logs.map((log) => (
           <ProgressItem
             key={log.id}
