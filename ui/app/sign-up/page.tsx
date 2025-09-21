@@ -1,129 +1,30 @@
-"use client";
-
-import Button from "../_components/button/button";
-import TextInput from "../_components/form/input";
-import { Amplify } from "aws-amplify";
-import {
-  Controller,
-  SubmitHandler,
-  useForm,
-} from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { signUpUser } from "../utils";
-import { amplifyConfig } from "@/amplify_config";
-
-Amplify.configure(amplifyConfig);
-
-const SignUpForm = () => {
-  const router = useRouter();
-  let {
-    handleSubmit,
-    formState: { errors },
-    control,
-  } = useForm<SignUpFormData>();
-
-  const onSubmit: SubmitHandler<SignUpFormData> = async (data) => {
-    signUpUser(data, router);
-  };
-
-  return (
-    <form className="flex flex-col max-w-md " onSubmit={handleSubmit(onSubmit)}>
-      <div className="flex gap-x-4">
-        <Controller
-          name="firstName"
-          control={control}
-          rules={{ required: "This field is required" }}
-          render={({ field }) => (
-            <TextInput
-              {...field}
-              error={errors.firstName}
-              className="mb-4"
-              label="First Name"
-              type="text"
-            />
-          )}
-        />
-        <Controller
-          name="lastName"
-          control={control}
-          rules={{ required: "This field is required" }}
-          render={({ field }) => (
-            <TextInput
-              {...field}
-              error={errors.lastName}
-              className="mb-4"
-              label="Last Name"
-              type="text"
-            />
-          )}
-        />
-      </div>
-
-      <Controller
-        name="username"
-        control={control}
-        rules={{
-          required: "This field is required",
-          pattern: {
-            value: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
-            message: "Invalid email",
-          },
-        }}
-        render={({ field }) => (
-          <TextInput
-            {...field}
-            error={errors.username}
-            className="mb-4"
-            label="Email"
-            type="text"
-          />
-        )}
-      />
-      <Controller
-        name="password"
-        control={control}
-        rules={{ required: "This field is required" }}
-        render={({ field }) => (
-          <TextInput
-            {...field}
-            error={errors.password}
-            className="mb-4"
-            label="Password"
-            type="password"
-          />
-        )}
-      />
-      <Button variant="emphasized" className="mt-8">
-        Create New Account
-      </Button>
-    </form>
-  );
-};
+import Logo from "../_components/logo/logo";
+import Plant from "./plant";
+import SignUpForm from "./sign-up-form";
+import Image from "next/image";
 
 export default function SignUp() {
   return (
     <main className="flex h-screen">
-      <section className="hidden md:flex w-1/2 flex-col justify-center">
-        <p className="text-center">Another Nice Picture</p>
+      <section className="relative hidden md:flex w-1/2 flex-col justify-center">
+        <Image
+          className="object-cover"
+          fill={true}
+          src="/sign-up-image.svg"
+          alt="Big plant"
+        ></Image>
       </section>
-      <section className="w-full md:w-1/2 flex flex-col justify-center mx-8 -mt-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-deep-blue-500">
-            Consistency is key.
-          </h1>
-          <p>
-            By focusing on winning each day we can accomplish incredible things.
-          </p>
+      <section className="flex w-full md:w-1/2">
+        <div className="w-3/4 mx-auto mt-14">
+          <Logo className="mb-8" />
+          <div className="mb-8">
+            <h1 className="mb-8 text-2xl font-bold text-deep-blue-500">Sign up</h1>
+            <p className="mb-8">Track your journey, not just your streaks.</p>
+          </div>
+          <SignUpForm></SignUpForm>
+          <Plant></Plant>
         </div>
-        <SignUpForm></SignUpForm>
       </section>
     </main>
   );
-}
-
-export interface SignUpFormData {
-  firstName: string,
-  lastName: string,
-  username: string,
-  password: string
 }
