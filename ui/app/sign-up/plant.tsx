@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function Plant() {
   return (
-    <div className="md:hidden mt-12">
+    <div className="md:hidden mt-16">
       <Image
         className="mx-auto"
         alt="A cute plant in a pot"

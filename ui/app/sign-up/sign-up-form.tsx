@@ -26,37 +26,6 @@ export default function SignUpForm() {
       className="flex flex-col max-w-md"
       onSubmit={handleSubmit(onSubmit)}
     >
-      <div className="flex gap-x-4 flex-col md:flex-row ">
-        <Controller
-          name="firstName"
-          control={control}
-          rules={{ required: "This field is required" }}
-          render={({ field }) => (
-            <TextInput
-              {...field}
-              error={errors.firstName}
-              className="mb-4"
-              label="First Name"
-              type="text"
-            />
-          )}
-        />
-        <Controller
-          name="lastName"
-          control={control}
-          rules={{ required: "This field is required" }}
-          render={({ field }) => (
-            <TextInput
-              {...field}
-              error={errors.lastName}
-              className="mb-4"
-              label="Last Name"
-              type="text"
-            />
-          )}
-        />
-      </div>
-
       <Controller
         name="username"
         control={control}
