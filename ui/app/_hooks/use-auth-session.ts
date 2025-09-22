@@ -11,10 +11,6 @@ export const useAuthSession = () => {
     queryFn: async () => {
       const result = await fetchAuthSession();
 
-      if (!result.tokens?.idToken) {
-        throw Error("");
-      }
-
       return result;
     },
   });
