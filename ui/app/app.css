@@ -33,8 +33,6 @@ ul {
   margin-block-start: 0;
   margin-block-end: 0;
   list-style-type: none;
-  display: flex;
-  margin: 8px 0;
 }
 
 /* Hide default radio & checkbox */
