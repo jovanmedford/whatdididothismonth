@@ -62,7 +62,7 @@ const MonthSelector = () => {
           <label
             key={index}
             className={`${
-              filters.month === index ? "bg-secondary-100 text-white" : ""
+              filters.month === index ? "bg-primary-500 text-white" : ""
             } block rounded-3xl px-3 py-1 focus:outline-2 radio-parent`}
           >
             {month}
