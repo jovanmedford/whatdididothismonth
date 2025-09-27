@@ -1,8 +1,8 @@
 "use client";
 import Button from "../_components/button/button";
-import TextInput from "../_components/form/input";
+import Input from "../_components/form/input";
 import { Amplify } from "aws-amplify";
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { signUpUser } from "../utils";
 import { amplifyConfig } from "@/amplify_config";
@@ -14,7 +14,7 @@ export default function SignUpForm() {
   let {
     handleSubmit,
     formState: { errors },
-    control,
+    register,
   } = useForm<SignUpFormData>();
 
   const onSubmit: SubmitHandler<SignUpFormData> = async (data) => {
@@ -22,43 +22,28 @@ export default function SignUpForm() {
   };
 
   return (
-    <form
-      className="flex flex-col max-w-md"
-      onSubmit={handleSubmit(onSubmit)}
-    >
-      <Controller
-        name="username"
-        control={control}
-        rules={{
+    <form className="flex flex-col max-w-md" onSubmit={handleSubmit(onSubmit)}>
+      <Input
+        {...register("username", {
           required: "This field is required",
           pattern: {
             value: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
             message: "Invalid email",
           },
-        }}
-        render={({ field }) => (
-          <TextInput
-            {...field}
-            error={errors.username}
-            className="mb-4"
-            label="Email"
-            type="text"
-          />
-        )}
+        })}
+        errorMessage={errors?.username?.message}
+        className="mb-4"
+        label="Email"
+        type="email"
       />
-      <Controller
-        name="password"
-        control={control}
-        rules={{ required: "This field is required" }}
-        render={({ field }) => (
-          <TextInput
-            {...field}
-            error={errors.password}
-            className="mb-4"
-            label="Password"
-            type="password"
-          />
-        )}
+      <Input
+        {...register("password", {
+          required: "This field is required",
+        })}
+        errorMessage={errors?.password?.message}
+        className="mb-4"
+        label="Password"
+        type="password"
       />
       <Button variant="emphasized" className="mt-8">
         Create New Account

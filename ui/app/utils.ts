@@ -20,8 +20,6 @@ export async function signUpUser(
       options: {
         userAttributes: {
           email: data.username,
-          given_name: data.firstName,
-          family_name: data.lastName,
         },
         autoSignIn: {
           signInOptions: "USER_AUTH",

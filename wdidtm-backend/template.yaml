@@ -152,12 +152,6 @@ Resources:
         - AttributeDataType: String
           Name: email
           Required: true
-        - AttributeDataType: String
-          Name: given_name
-          Required: true
-        - AttributeDataType: String
-          Name: family_name
-          Required: true
       VerificationMessageTemplate:
         DefaultEmailOption: CONFIRM_WITH_CODE
 
