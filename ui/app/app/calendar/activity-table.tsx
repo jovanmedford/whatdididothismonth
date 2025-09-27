@@ -71,36 +71,6 @@ const Row = ({ activity }: { activity: ActivityLog }) => {
   );
 };
 
-const fetchActivities = async (filters: Filters, token?: string) => {
-  if (!token) {
-    console.log("Not signed in");
-    return [];
-  }
-
-  let params = new URLSearchParams();
-  params.set("year", String(filters.year));
-  params.set("month", String(filters.month));
-
-  const response = await fetch(
-    `${
-      process.env.NEXT_PUBLIC_API_ENDPOINT
-    }/activity-logs?${params.toString()}`,
-    {
-      mode: "cors",
-      headers: {
-        Authorization: token,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw Error;
-  }
-
-  return response.json();
-};
-
 const toggleSuccess = async (
   shouldAdd: boolean,
   activityLogId: string,

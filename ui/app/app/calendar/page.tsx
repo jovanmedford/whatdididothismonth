@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import AppHeader from "../app-header";
-import ActivityTable from "./activity-table";
+import LogManager from "./log-manager";
 import { FilterContext } from "./filter-context";
 import DateFilters from "./date-filters";
 import SidePanel from "./side-panel";
@@ -17,7 +17,7 @@ const ActivityManager = () => {
     <main className="px-2 md:px-10">
       <FilterContext.Provider value={{ filters, setFilters }}>
         <DateFilters />
-        <ActivityTable />
+        <LogManager />
         <SidePanel />
       </FilterContext.Provider>
     </main>

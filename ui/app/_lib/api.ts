@@ -1,4 +1,5 @@
-import { Activity, Category } from "../_types/types";
+import { Activity, ActivityLog, Category } from "../_types/types";
+import { Filters } from "../app/calendar/filter-context";
 
 /**
  * Get user categories
@@ -54,6 +55,41 @@ export const fetchActivities = async (
 
   if (!response.ok) {
     throw Error("An error occured");
+  }
+
+  return response.json();
+};
+
+/**
+ * Fetch activity logs
+ * @param filters 
+ * @param token 
+ */
+export const fetchLogs = async (filters: Filters, token?: string): Promise<ActivityLog[]> => {
+  if (!token) {
+    console.log("Not signed in");
+    return [];
+  }
+
+  let params = new URLSearchParams();
+  params.set("year", String(filters.year));
+  params.set("month", String(filters.month));
+
+  const response = await fetch(
+    `${
+      process.env.NEXT_PUBLIC_API_ENDPOINT
+    }/activity-logs?${params.toString()}`,
+    {
+      mode: "cors",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw Error;
   }
 
   return response.json();
