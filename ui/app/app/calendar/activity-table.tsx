@@ -1,22 +1,23 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { daysInMonth, generateArray } from "@/app/utils";
+import { daysInMonth } from "@/app/utils";
 import { Filters, useFilterContext } from "./filter-context";
 import { AuthSession, fetchAuthSession } from "aws-amplify/auth";
 import { showNotification } from "@/app/_components/toast/toast";
-import { ActivityLog, Category } from "@/app/_types/types";
+import { ActivityLog } from "@/app/_types/types";
 import { useAuthSession } from "@/app/_hooks/use-auth-session";
+import ProgressGrid from "@/app/_components/progress-grid/progress-grid";
 
 const DateSquares = ({ activity }: { activity: ActivityLog }) => {
   const { filters } = useFilterContext();
   let { month, year } = filters;
-  let indices = generateArray(0, daysInMonth(month, year));
+  let numOfDays = daysInMonth(month, year);
   let successSet = new Set(activity.successes);
 
   const queryClient = useQueryClient();
 
-  let { data: session, status: testStatus } = useQuery<AuthSession>({
+  let { data: session } = useQuery<AuthSession>({
     queryKey: ["session"],
     queryFn: async () => await fetchAuthSession(),
   });
@@ -40,23 +41,16 @@ const DateSquares = ({ activity }: { activity: ActivityLog }) => {
   });
 
   return (
-    <div className="flex gap-4 w-40 m-auto md:w-full md:flex-wrap overflow-auto">
-      {indices.map((index) => (
-        <label
-          key={`${activity}-${index}`}
-          onClick={() => mutation.mutate({ day: index, session })}
-          className="checkbox-parent flex justify-center w-6"
-        >
-          {index}
-          <input
-            readOnly
-            data-index={index}
-            checked={successSet.has(index)}
-            type="checkbox"
-            name={activity.activityId}
-          ></input>
-        </label>
-      ))}
+    <div className="w-40 m-auto md:w-full px-2">
+      <ProgressGrid
+        className="gap-2 flex-wrap"
+        numOfDays={numOfDays}
+        successes={activity.successes}
+        activity={{ id: activity.activityId, label: activity.activityName }}
+        onToggleSuccess={(e) => {
+          mutation.mutate({ day: Number(e.target.value), session });
+        }}
+      />
     </div>
   );
 };
@@ -65,9 +59,10 @@ const Row = ({ activity }: { activity: ActivityLog }) => {
   return (
     <tr tabIndex={0} className="h-20 border-b-1">
       <th className="w-6/12 md:w-4/12 border-r-1 px-1">
-        {/* <Pill label={activity.categoryName} color={activity.categoryColor} /> */}
         {activity.activityName}
-        <span className="text-xs font-normal">(0/{activity.target})</span>
+        <span className="text-xs font-normal">
+          ({activity.successes.length}/{activity.target})
+        </span>
       </th>
       <td className="w-6/12 md:w-8/12 overflow-x-auto">
         <DateSquares activity={activity} />
@@ -173,14 +168,3 @@ export default function ActivityTable() {
     </table>
   );
 }
-
-const Pill = ({ color, label }: Category) => {
-  return (
-    <span
-      className="font-normal px-1 py-0.5 text-xs"
-      style={{ background: color }}
-    >
-      {label}
-    </span>
-  );
-};
