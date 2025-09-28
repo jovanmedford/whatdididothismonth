@@ -24,7 +24,7 @@ export default function BannerWidget() {
         </span>{" "}
         this month.
       </p>
-      <ul className="overflow-hidden justify-center">
+      <ul className="flex overflow-hidden justify-center">
         {logs.map((log) => (
           <ProgressItem
             key={log.id}
