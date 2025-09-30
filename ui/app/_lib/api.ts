@@ -62,10 +62,13 @@ export const fetchActivities = async (
 
 /**
  * Fetch activity logs
- * @param filters 
- * @param token 
+ * @param filters
+ * @param token
  */
-export const fetchLogs = async (filters: Filters, token?: string): Promise<ActivityLog[]> => {
+export const fetchLogs = async (
+  filters: Filters,
+  token?: string
+): Promise<ActivityLog[]> => {
   if (!token) {
     console.log("Not signed in");
     return [];
@@ -122,3 +125,38 @@ export const createActivityLog = async (
 
   return response.json();
 };
+
+/**
+ * Adds or remove an item from the success log table 
+ */
+export const toggleSuccess = async (
+  isSuccess: boolean,
+  activityLogId: string,
+  day: number,
+  token?: string
+) => {
+  if (!token) {
+    throw Error("Not logged in.");
+  }
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_ENDPOINT}/success-logs`,
+    {
+      mode: "cors",
+      method: isSuccess ? "DELETE" : "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: JSON.stringify({ activityLogId, day }),
+    }
+  );
+
+  if (!response.ok) {
+    throw Error;
+  }
+};
+
+export const deleteLog = async () => {
+  
+}
