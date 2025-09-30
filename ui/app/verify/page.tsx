@@ -79,7 +79,7 @@ export default function Page() {
             render={({ field }) => (
               <TextInput
                 {...field}
-                error={errors.confirmationCode}
+                errorMessage={errors.confirmationCode?.message}
                 className="mb-4"
                 label="Verification Code"
                 type="text"
