@@ -1,35 +1,57 @@
-import ProgressGrid from "@/app/_components/progress-grid/progress-grid";
-import { LogViewProps } from "./log-manager";
-import { daysInMonth } from "@/app/utils";
+import { ActivityLog } from "@/app/_types/types";
+import LogView, { LogContainerRenderer, LogItemRenderer } from "./log-view";
+import Button from "@/app/_components/button/button";
+import { Ellipsis } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 
-export default function LogList({ activityLogs, month, year }: LogViewProps) {
-  let numOfDays = daysInMonth(month, year);
-
-  if (activityLogs.length == 0) {
-    return <p>Whoops! No tracking data this month</p>;
-  }
-
+/**
+ * Renders list view of activity logs
+ */
+export default function LogList({
+  activityLogs,
+}: {
+  activityLogs: ActivityLog[];
+}) {
   return (
-    <ul className="block pt-4">
-      {activityLogs.map((log) => (
-        <li key={log.id} className="max-w-108 mx-auto mb-4">
-          <h2 className="mb-1">
-            {log.activityName}{" "}
-            <span className="text-xs font-normal">
-              {log.successes.length}/{log.target}
-            </span>
-          </h2>
-          <div>
-            <ProgressGrid
-              className="grid grid-cols-7 gap-y-4"
-              numOfDays={numOfDays}
-              successes={log.successes}
-              activity={{ id: log.activityId, label: log.activityName }}
-            
-            />
-          </div>
-        </li>
-      ))}
-    </ul>
+    <LogView
+      activityLogs={activityLogs}
+      itemRenderer={ListItem}
+      containerRenderer={ListContainer}
+    />
   );
 }
+
+const ListContainer: LogContainerRenderer = ({ children }) => {
+  return <ul className="block pt-4 mx-4">{children}</ul>;
+};
+
+const ListItem: LogItemRenderer = ({
+  log,
+  children,
+  onSelected,
+  isSelected,
+}) => {
+  return (
+    <li
+      key={log.id}
+      className={`max-w-108 mx-auto mt-4 mb-8 px-4 py-3 rounded-lg ${isSelected ? "bg-primary-100" : ""}`}
+      onClick={onSelected}
+    >
+      <div className={`py-2 flex justify-between `}>
+        <div className="flex items-center gap-2">
+          <h2 className="font-bold">{log.activityName} </h2>
+          <span className="text-xs font-normal">
+            {log.successes.length}/{log.target}
+          </span>
+        </div>
+        {isSelected ? (
+          <Button size="small" icon={CircleCheck} />
+        ) : (
+          <Button onClick={(e) => e.stopPropagation()} size="small" icon={Ellipsis} />
+        )}
+      </div>
+
+      <div>{children}</div>
+    </li>
+  );
+};
