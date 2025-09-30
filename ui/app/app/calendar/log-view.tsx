@@ -58,7 +58,7 @@ function LogItem({
   return (
     <Item log={log} onSelected={handleLogSelected} isSelected={isSelected}>
       <ProgressGrid
-        className="flex gap-2 flex-wrap"
+        className="grid grid-cols-7 gap-y-4 md:flex md:gap-2 md:flex-wrap"
         numOfDays={numOfDays}
         successes={log.successes}
         activity={{ id: log.activityId, label: log.activityName }}
