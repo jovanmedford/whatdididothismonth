@@ -1,12 +1,15 @@
-import { ButtonHTMLAttributes } from "react";
+import { ComponentProps, FC } from "react";
+import { LucideProps } from "lucide-react";
 import "./button.css";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends ComponentProps<"button"> {
   variant?: "default" | "emphasized";
   size?: "small" | "medium" | "large";
+  icon?: FC<LucideProps & ComponentProps<"svg">>;
 }
 
 export default function Button({
+  icon: Icon,
   variant = "default",
   size = "medium",
   children,
@@ -17,7 +20,21 @@ export default function Button({
       {...props}
       className={props.className + ` btn btn-${variant} btn-${size}`}
     >
+      {Icon && (
+        <Icon className={`${iconColor[variant]}`} size={iconSize[size]} />
+      )}
       {children}
     </button>
   );
 }
+
+const iconSize = {
+  small: 16,
+  medium: 16,
+  large: 20,
+};
+
+const iconColor = {
+  default: "text-text",
+  emphasized: "text-white",
+};
