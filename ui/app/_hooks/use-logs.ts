@@ -7,7 +7,7 @@ import { ActivityLog } from "../_types/types";
 export default function useLogs(filters: Filters) {
   const { token } = useAuthSession();
   const { status, data, error } = useQuery({
-    queryKey: ["logs", filters.month, filters.year],
+    queryKey: ["logs", filters.year, filters.month],
     queryFn: async () => fetchLogs(filters, token),
     enabled: !!token,
   });
