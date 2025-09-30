@@ -43,7 +43,7 @@ export default function ProgressSquare({
     <li>
       <label
         className={`
-        h-10 w-10 checkbox-parent block
+        h-8 w-8 checkbox-parent block
       ${chooseBackgroundColor(isHighlighted, isActive)}
       ${hoverStyle(isActive)}
       ${className ?? ""}`}
