@@ -62,9 +62,9 @@ export const handler = async (event) => {
     };
   }
 
-  const email = event.requestContext.authorizer.claims.email;
+  const userId = event.requestContext.authorizer.claims.sub;
 
-  if (!Guard.canEditSuccessLog(email, activityLogId, client)) {
+  if (!Guard.canEditActivityLog(userId, activityLogId, client)) {
     return {
       statusCode: 404,
       headers: corsHeaders,

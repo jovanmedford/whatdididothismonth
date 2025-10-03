@@ -157,6 +157,29 @@ export const toggleSuccess = async (
   }
 };
 
-export const deleteLog = async () => {
-  
-}
+export const deleteLog = async (ids: string, token?: string) => {
+  if (!token) {
+    throw Error("Not logged in.");
+  }
+
+  if (!ids) {
+    throw Error("No logs to delete");
+  }
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_ENDPOINT}/activity-logs?ids=${ids}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw Error;
+  }
+
+  return response.json();
+};

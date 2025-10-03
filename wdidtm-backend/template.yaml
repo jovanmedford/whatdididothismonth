@@ -377,6 +377,39 @@ Resources:
       BuildProperties:
         Target: es2020
 
+  deleteActivityLogsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/activity-logs-delete.handler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Delete a list of activity logs.
+      Environment:
+        Variables:
+          DB_USERNAME: !Ref RdsUser
+          DB_PASSWORD: !Ref RdsPassword
+          DB_PORT: 5432
+          DB_PROXY_ENDPOINT: !GetAtt DbProxy.Outputs.DBProxyEndpoint
+          DB_NAME: "postgres"
+      VpcConfig:
+        SecurityGroupIds:
+          - !GetAtt VPC.Outputs.AppSecurityGroup
+        SubnetIds: !Split [",", !GetAtt VPC.Outputs.AppSubnets]
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /activity-logs
+            Method: DELETE
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2020
+
   successLogsFunction:
     Type: AWS::Serverless::Function
     Properties:

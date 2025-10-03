@@ -1,12 +1,12 @@
 export default {
-  async canEditSuccessLog(email, activityLogId, dbClient) {
+  async canEditActivityLog(userId, activityLogId, dbClient) {
     if (!dbClient) {
       return false;
     }
 
     try {
       let text = `SELECT
-    email
+    activity_logs.id
     FROM
     users
     JOIN categories ON users.id = categories.user_id
@@ -19,7 +19,7 @@ export default {
         return false;
       }
 
-      return res.rows[0].email === email;
+      return res.rows[0].id === userId;
     } catch (e) {
       console.error("Error checking edit:", e);
       return false;

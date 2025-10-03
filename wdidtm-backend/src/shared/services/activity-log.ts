@@ -15,6 +15,14 @@ const ActivityLogService: Service<ActivityLog, ActivityLogInput> = {
     let validator = createInputValidator(["year", "month", "target"]);
     return validator(input);
   },
+
+  async delete(dbClient, activityLogId) {
+    return await executeQuery(
+      dbClient,
+      `DELETE FROM activity_logs WHERE activity_logs.id = $1`,
+      [activityLogId]
+    );
+  },
 };
 
 export default ActivityLogService;

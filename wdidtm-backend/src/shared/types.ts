@@ -74,11 +74,15 @@ export interface Service<T, U> {
     parentId: string
   ) => Promise<Result<T[]>>;
   validateInput: (input: U) => Result;
-  getByUser?: (dbClient: Client, userId: string) => Promise<Result<T[]>>
-  getByCategory?: (dbClient: Client, categoryId: string) => Promise<Result<T[]>>
-  delete?: (
+  getByUser?: (dbClient: Client, userId: string) => Promise<Result<T[]>>;
+  getByCategory?: (
+    dbClient: Client,
+    categoryId: string
+  ) => Promise<Result<T[]>>;
+  delete?(dbClient: Client, id: string): Promise<Result<string[]>>;
+  delete?(
     dbClient: Client,
     input: U,
     parentId: string
-  ) => Promise<Result<string[]>>;
+  ): Promise<Result<string[]>>;
 }
