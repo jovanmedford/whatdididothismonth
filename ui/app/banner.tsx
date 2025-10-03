@@ -1,4 +1,4 @@
-import LinkButton from "./_components/link-button";
+import LinkButton from "./_components/link-button/link-button";
 import BannerWidget from "./banner-widget";
 
 export default function Banner() {

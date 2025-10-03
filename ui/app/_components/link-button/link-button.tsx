@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { PropsWithChildren } from "react";
+import { ComponentProps } from "react";
 
 export default function LinkButton({
   children,
   href,
-  className
-}: PropsWithChildren<{ href: string, className?: string }>) {
+  className,
+}: LinkButtonProps) {
   return (
     <Link
       href={href}
@@ -15,3 +15,7 @@ export default function LinkButton({
     </Link>
   );
 }
+
+type LinkButtonProps = ComponentProps<"a"> & {
+  href: string;
+};
