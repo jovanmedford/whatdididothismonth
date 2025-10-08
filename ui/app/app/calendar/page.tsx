@@ -5,7 +5,6 @@ import AppHeader from "../app-header";
 import LogManager from "./log-manager";
 import { FilterContext } from "./filter-context";
 import DateFilters from "./date-filters";
-import SidePanel from "./side-panel";
 
 const ActivityManager = () => {
   let [filters, setFilters] = useState({
@@ -18,7 +17,6 @@ const ActivityManager = () => {
       <FilterContext.Provider value={{ filters, setFilters }}>
         <DateFilters />
         <LogManager />
-        <SidePanel />
       </FilterContext.Provider>
     </main>
   );
