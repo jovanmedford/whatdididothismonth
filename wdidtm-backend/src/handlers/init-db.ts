@@ -1,6 +1,7 @@
 import { executeQuery } from "../shared/utils";
 import { Client } from "pg";
 import createTablesQuery from "@queries/init.sql";
+import insertData from "@queries/insert-system-data.sql";
 
 let client: Client | null = null;
 
@@ -32,6 +33,12 @@ export const handler = async () => {
 
   if (!tablesResult.ok) {
     return tablesResult.message;
+  }
+
+  const insertSystemDataResult = await executeQuery(client, insertData);
+
+  if (!insertSystemDataResult.ok) {
+    return insertSystemDataResult.message;
   }
 
   return "Success!";
