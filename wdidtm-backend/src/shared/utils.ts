@@ -1,4 +1,7 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventQueryStringParameters,
+} from "aws-lambda";
 import { ErrorResult, Result, SuccessResult } from "./types";
 import { Client } from "pg";
 
@@ -96,6 +99,64 @@ export const createPostTestEvent = ({
     path: "",
     pathParameters: null,
     queryStringParameters: null,
+    multiValueQueryStringParameters: null,
+    stageVariables: null,
+    requestContext: {
+      authorizer: {
+        claims: {
+          sub: userId,
+        },
+      },
+      accountId: "",
+      apiId: "",
+      protocol: "",
+      httpMethod: "",
+      identity: {
+        accessKey: null,
+        accountId: null,
+        apiKey: null,
+        apiKeyId: null,
+        caller: null,
+        clientCert: null,
+        cognitoAuthenticationProvider: null,
+        cognitoAuthenticationType: null,
+        cognitoIdentityId: null,
+        cognitoIdentityPoolId: null,
+        principalOrgId: null,
+        sourceIp: "",
+        user: null,
+        userAgent: null,
+        userArn: null,
+      },
+      path: "",
+      stage: "",
+      requestId: "",
+      requestTimeEpoch: 0,
+      resourceId: "",
+      resourcePath: "",
+    },
+    resource: "",
+  };
+
+  return event;
+};
+
+export const createGetTestEvent = ({
+  queryParams,
+  userId,
+}: {
+  queryParams: APIGatewayProxyEventQueryStringParameters;
+  userId: string;
+}): APIGatewayProxyEvent => {
+  let event: APIGatewayProxyEvent = {
+    body: null,
+    headers: {},
+    multiValueHeaders: {},
+    httpMethod: "GET",
+    isBase64Encoded: false,
+    path: "",
+    pathParameters: null,
+    queryStringParameters: queryParams,
     multiValueQueryStringParameters: null,
     stageVariables: null,
     requestContext: {

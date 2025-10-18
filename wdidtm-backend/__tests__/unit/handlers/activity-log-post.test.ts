@@ -40,7 +40,7 @@ describe("Creating activity logs", () => {
       body: JSON.stringify(input),
     });
 
-    const response = await handler(event, client);
+    const response = await handler(event, null, null, client);
 
     expect(response.statusCode).toBe(200);
     const result = JSON.parse(response.body) as ActivityLog;
@@ -60,7 +60,7 @@ describe("Creating activity logs", () => {
       body: JSON.stringify(input),
     });
 
-    const response = await handler(event, client);
+    const response = await handler(event, null, null, client);
 
     expect(response.statusCode).toBe(200);
     const result = JSON.parse(response.body) as ActivityLog;

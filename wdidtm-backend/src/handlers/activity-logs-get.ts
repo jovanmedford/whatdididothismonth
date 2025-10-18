@@ -1,11 +1,18 @@
-import { SYSTEM_USER_ID } from "../shared/constants";
+import { Client } from "pg";
 import { FORBIDDEN_ERROR_MESSAGE } from "../shared/errors";
+import ActivityLogService from "../shared/services/activity-log";
 import { createDbClientGetter } from "../shared/utils";
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-const getDbClient = createDbClientGetter();
+let client: Client;
+let getDbClient = createDbClientGetter();
 
-export const handler = async (event: APIGatewayProxyEvent) => {
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  context: any,
+  callback: any,
+  testClient: Client
+) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type,Authorization",
@@ -39,10 +46,11 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   }
 
   console.info("received:", event);
+  console.info("Client", testClient)
 
   const { year, month } = event.queryStringParameters;
 
-  if (!year || !month) {
+  if (isNaN(Number(year)) || isNaN(Number(month))) {
     return {
       statusCode: 400,
       headers: corsHeaders,
@@ -50,42 +58,18 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     };
   }
 
-  let client = await getDbClient();
+  client = await getDbClient(testClient ?? client);
+  const activityLogService = new ActivityLogService(client);
 
   const userId = event.requestContext.authorizer.claims.sub;
-  let res;
-  try {
-    let text = `SELECT
-    activity_logs.id AS "id",
-    activities.id AS "activityId",
-    activities.label AS "activityName",
-    categories.label AS "categoryName",
-    categories.color AS "categoryColor",
-    categories.icon AS "categoryIcon",
-    COALESCE(
-    json_agg(success_logs.day) FILTER (WHERE success_logs.day IS NOT NULL),
-    '[]'::json
-    ) AS successes,
-    activity_logs.target target
-FROM
-    users
-    JOIN categories ON users.id = categories.user_id
-    JOIN activities ON categories.id = activities.cat_id
-    JOIN activity_logs ON activities.id = activity_logs.activity_id
-    LEFT JOIN success_logs ON activity_logs.id = success_logs.activity_log_id
-WHERE
-    (users.id = $1 OR categories.user_id = $2) AND activity_logs.year = $3 AND activity_logs.month = $4
-GROUP BY
-    activity_logs.id,
-    activities.id,
-    activities.label,
-    categories.label,
-    categories.color,
-    categories.icon,
-    activity_logs.target;`;
-    res = await client.query(text, [userId, SYSTEM_USER_ID, year, month]);
-  } catch (err) {
-    console.log("Console logged error --->", err);
+
+  const result = await activityLogService.getByDate({
+    year: Number(year),
+    month: Number(month),
+    userId,
+  });
+
+  if (!result.ok) {
     return {
       statusCode: 500,
       headers: corsHeaders,
@@ -96,7 +80,7 @@ GROUP BY
   const response = {
     statusCode: 200,
     headers: corsHeaders,
-    body: JSON.stringify(res.rows),
+    body: JSON.stringify(result.data),
   };
 
   // All log statements are written to CloudWatch

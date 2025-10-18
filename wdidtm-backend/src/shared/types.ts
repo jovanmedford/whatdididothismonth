@@ -49,6 +49,17 @@ export interface ActivityLog {
   target: number;
 }
 
+export interface ActivityLogResult {
+  activityId: string;
+  activityName: string;
+  categoryName: string;
+  categoryColor: string;
+  categoryIcon: string;
+  successes: number[];
+  id: string;
+  target: number;
+}
+
 export type ActivityLogInput = Omit<ActivityLog, "id">;
 
 export interface SuccessLog {
