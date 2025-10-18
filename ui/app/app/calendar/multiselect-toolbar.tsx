@@ -18,7 +18,7 @@ export default function MultiselectToolbar() {
   return (
     <div
       className={`
-        fixed top-0 left-0 right-0 flex mb-1 px-4 py-5 justify-center
+        fixed top-0 left-0 right-0 flex px-4 py-5 justify-center
         md:static md:ml-4 md:rounded-xl md:px-3 md:py-1 bg-gray-200  items-center`}
     >
       <span className="mr-2">{selected.length} selected</span>

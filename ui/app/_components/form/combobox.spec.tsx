@@ -47,6 +47,12 @@ const activityToItemList = (data: Activity[]): Item<Activity>[] => {
     : [];
 };
 
+describe("Activity Combobox", () => {
+  it("filters activities", () => {
+    render(<ActivityCombobox activities={sampleActivities} />)
+  })
+})
+
 function getActivitiesFilter(inputValue: string) {
   const lowerCasedInputValue = inputValue.toLowerCase();
 

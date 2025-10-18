@@ -2,6 +2,7 @@ import MonthPicker from "@/app/_components/form/month-picker";
 import { Filters, useFilterContext } from "./filter-context";
 import { ChangeEvent } from "react";
 import MultiselectToolbar from "./multiselect-toolbar";
+import ActivityLogPopover from "./activity-log-popover";
 
 export default function DateFilters() {
   let { filters, setFilters } = useFilterContext();
@@ -23,20 +24,23 @@ export default function DateFilters() {
 
   return (
     <>
-      <div className="flex h-8">
-        <select
-          onChange={handleYearChange}
-          name="year"
-          aria-label="Choose the year."
-          value={filters.year}
-        >
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-        <MultiselectToolbar />
+      <div className="flex items-end justify-between mb-2">
+        <div className="flex items-end">
+          <select
+            onChange={handleYearChange}
+            name="year"
+            aria-label="Choose the year."
+            value={filters.year}
+          >
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+          <MultiselectToolbar />
+        </div>
+        <ActivityLogPopover />
       </div>
       <div className="flex flex-wrap justify-start  md:justify-between border-t-1 border-b-1 pt-2 pb-2">
         <MonthPicker

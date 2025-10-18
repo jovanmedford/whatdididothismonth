@@ -1,27 +1,50 @@
+import { Client } from "pg";
 import { Category, CategoryInput, Service } from "../types";
 import { executeQuery, createInputValidator } from "../utils";
+import { UNCATEGORIZED_ID } from "../constants";
 
-const CategoryService: Service<Category, CategoryInput> = {
-  async create(dbClient, { label, icon, color }, userId) {
+class CategoryService implements Service<Category, CategoryInput> {
+  constructor(private dbClient: Client) {}
+
+  async builderCreate(
+    { label, icon, color }: Omit<CategoryInput, "userId">,
+    userId: string
+  ) {
     return await executeQuery(
-      dbClient,
+      this.dbClient,
       `INSERT INTO categories (user_id, label, icon, color) VALUES ($1, $2, $3, $4) RETURNING *;`,
       [userId, label, icon, color]
     );
-  },
+  }
 
-  async getByUser(dbClient, userId) {
-    return await executeQuery(
-      dbClient,
+  async create(input: CategoryInput) {
+    return await executeQuery<Category>(
+      this.dbClient,
+      `INSERT INTO categories (user_id, label, icon, color) VALUES ($1, $2, $3, $4) RETURNING *;`,
+      [input.userId, input.label, input.icon, input.color]
+    );
+  }
+
+  async findAllByUser(userId: string) {
+    return await executeQuery<Category>(
+      this.dbClient,
       `SELECT * FROM categories WHERE user_id = $1;`,
       [userId]
     );
-  },
+  }
 
-  validateInput(input) {
+  async getUncategorized() {
+    return await executeQuery<Category>(
+      this.dbClient,
+      `SELECT * FROM categories WHERE id = $1;`,
+      [UNCATEGORIZED_ID]
+    );
+  }
+
+  validateInput(input: CategoryInput) {
     let validator = createInputValidator(["label", "icon", "color"]);
     return validator(input);
-  },
-};
+  }
+}
 
 export default CategoryService;

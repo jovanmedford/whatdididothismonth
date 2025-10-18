@@ -18,7 +18,7 @@ export default function SegmentedControl({
         {label}
       </span>
       <div
-        className={`flex border-1 rounded-3xl border-primary-500  ${className ?? ""}`}
+        className={`flex border-1 rounded-3xl border-primary-500 -ml-2  ${className ?? ""}`}
         role="radiogroup"
         aria-labelledby={`${generatedId}-label`}
       >
@@ -27,7 +27,7 @@ export default function SegmentedControl({
           return (
             <label
               key={item.value}
-              className={`block px-4 py-1 rounded-3xl focus-within:outline-2 focus-within:outline-black focus-within:outline-offset-0 ${isChecked && "bg-primary-500 text-white"}`}
+              className={`block px-4 py-0.5 rounded-3xl focus-within:outline-2 focus-within:outline-black focus-within:outline-offset-0 ${isChecked && "bg-primary-500 text-white"}`}
             >
               <input
                 {...delegated}

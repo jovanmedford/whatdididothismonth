@@ -1,6 +1,8 @@
 import { Client } from "pg";
 import ActivityService from "../shared/services/activity";
-import { NO_CLIENT_MESSAGE } from "../shared/errors.mjs";
+import { NO_CLIENT_MESSAGE } from "../shared/errors.js";
+import { APIGatewayProxyEvent } from "aws-lambda";
+
 
 let client: Client | null = null;
 const getDbClient = async () => {
@@ -24,7 +26,7 @@ const getDbClient = async () => {
   return client;
 };
 
-export const handler = async (event) => {
+export const handler = async (event: APIGatewayProxyEvent) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type,Authorization",
@@ -40,6 +42,7 @@ export const handler = async (event) => {
   }
 
   let client = await getDbClient();
+  let activityService = new ActivityService(client);
 
   if (!client) {
     console.error(NO_CLIENT_MESSAGE);
@@ -50,18 +53,23 @@ export const handler = async (event) => {
     };
   }
 
-  let params = event.queryStringParameters;
+  if (!event.requestContext.authorizer) {
+    return {
+      statusCode: 401,
+      headers: corsHeaders,
+      body: JSON.stringify({
+        error: "Forbidden resource.",
+      }),
+    };
+  }
 
-  const categoryId =
-    params && params.categoryId
-      ? event.queryStringParameters.categoryId
-      : null;
+  const categoryId = event?.queryStringParameters?.categoryId;
 
   const userId = event.requestContext.authorizer.claims.sub;
 
   // Get by category
   if (categoryId) {
-    let result = await ActivityService.getByCategory!(client, categoryId);
+    let result = await activityService.getByCategory(categoryId);
 
     if (!result.ok) {
       return {
@@ -79,7 +87,7 @@ export const handler = async (event) => {
   }
 
   // Get by user
-  let result = await ActivityService.getByUser!(client, userId);
+  let result = await activityService.findAllByUser(userId);
 
   if (!result.ok) {
     return {

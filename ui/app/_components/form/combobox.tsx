@@ -1,47 +1,31 @@
 import { useCombobox } from "downshift";
-import React, { Dispatch, forwardRef, SetStateAction, useState } from "react";
-import Button from "../button/button";
+import React, { forwardRef, Ref, useState } from "react";
+import Input from "./input";
 
-export const Combobox = forwardRef<
-  HTMLInputElement,
-  {
-    name: string;
-    label: string;
-    className?: string;
-    isNew?: boolean;
-    onChange?: any;
-    onBlur?: any;
-    itemList: Item[];
-    onNewClick: () => void;
-    getItemFilter: (inputValue: string) => (item: Item) => boolean;
-  }
->(
+export const Combobox = forwardRef(
   (
     {
       name,
       label,
       className,
-      isNew,
       onChange,
       onBlur,
       itemList,
-      onNewClick,
       getItemFilter,
-    },
-    ref
+      ...delegated
+    }: ComboboxProps,
+    ref: Ref<HTMLInputElement>
   ) => {
     const [inputValue, setInputValue] = useState("");
+    const id = React.useId();
     let items = itemList.filter(getItemFilter(inputValue));
-    // Combobox
     const {
       isOpen,
       getInputProps,
-      getLabelProps,
       highlightedIndex,
       selectedItem,
       getItemProps,
       getMenuProps,
-      closeMenu,
     } = useCombobox({
       onInputValueChange({ inputValue: newValue }) {
         setInputValue(newValue);
@@ -52,22 +36,14 @@ export const Combobox = forwardRef<
       },
     });
 
-    const handleNewButton = () => {
-      onNewClick();
-      closeMenu();
-    };
-
-    const isExistingOption = items.find((item) => item.label == inputValue);
-    const hasInput = inputValue.length > 0;
-    const shouldShowNewButton = !isExistingOption && hasInput && isOpen && !isNew;
-
     return (
       <div className={className}>
-        <label {...getLabelProps()}>{label} {isNew && "(New)"}</label>
         <div>
-          <input
-            className="border-1"
+          <Input
+            {...delegated}
+            label={label}
             {...getInputProps({
+              id,
               name,
               ref,
               onChange,
@@ -82,7 +58,6 @@ export const Combobox = forwardRef<
           {...getMenuProps()}
         >
           {isOpen &&
-            !isNew &&
             items.map((item, index) => (
               <li
                 key={item.key}
@@ -94,11 +69,6 @@ export const Combobox = forwardRef<
                 <span>{item.label}</span>
               </li>
             ))}
-          {shouldShowNewButton && (
-            <Button type="button" onClick={handleNewButton}>
-              {inputValue} (New)
-            </Button>
-          )}
         </ul>
       </div>
     );
@@ -106,9 +76,13 @@ export const Combobox = forwardRef<
 );
 
 export interface ComboboxProps<T = any> {
+  name?: string;
   label: string;
-  itemList: Item<T>[];
-  getItemFilter: (inputValue: string) => (item: Item<T>) => boolean;
+  itemList: Item[];
+  className?: string;
+  onChange?: any;
+  onBlur?: any;
+  getItemFilter: (inputValue: string) => (item: Item) => boolean;
 }
 
 export interface Item<T = any> {

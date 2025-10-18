@@ -1,6 +1,7 @@
 import { Client } from "pg";
 import CategoryService from "../shared/services/category";
-import { NO_CLIENT_MESSAGE } from "../shared/errors.mjs";
+import { NO_CLIENT_MESSAGE } from "../shared/errors.js";
+import { APIGatewayProxyEvent } from "aws-lambda";
 
 let client: Client | null = null;
 const getDbClient = async () => {
@@ -24,7 +25,7 @@ const getDbClient = async () => {
   return client;
 };
 
-export const handler = async (event) => {
+export const handler = async (event: APIGatewayProxyEvent) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type,Authorization",
@@ -40,6 +41,7 @@ export const handler = async (event) => {
   }
 
   let client = await getDbClient();
+  const categoryService = new CategoryService(client);
 
   if (!client) {
     console.error(NO_CLIENT_MESSAGE);
@@ -50,10 +52,11 @@ export const handler = async (event) => {
     };
   }
 
-  const userId = event.requestContext.authorizer.claims.sub;
+  
 
+  const userId = event.requestContext!.authorizer!.claims.sub;
 
-  let result = await CategoryService.getByUser!(client, userId);
+  let result = await categoryService.findAllByUser(userId);
 
   if (!result.ok) {
     return {

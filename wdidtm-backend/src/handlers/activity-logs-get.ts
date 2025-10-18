@@ -1,19 +1,11 @@
-import { Client } from "pg";
+import { SYSTEM_USER_ID } from "../shared/constants";
+import { FORBIDDEN_ERROR_MESSAGE } from "../shared/errors";
+import { createDbClientGetter } from "../shared/utils";
+import { APIGatewayProxyEvent } from "aws-lambda";
 
-const client = new Client({
-  user: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-  host: process.env.DB_PROXY_ENDPOINT,
-  database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: true,
-  }
-});
+const getDbClient = createDbClientGetter();
 
-await client.connect();
-
-export const handler = async (event) => {
+export const handler = async (event: APIGatewayProxyEvent) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type,Authorization",
@@ -36,6 +28,16 @@ export const handler = async (event) => {
     };
   }
 
+  if (!event.requestContext.authorizer) {
+    return {
+      statusCode: 401,
+      headers: corsHeaders,
+      body: JSON.stringify({
+        error: FORBIDDEN_ERROR_MESSAGE,
+      }),
+    };
+  }
+
   console.info("received:", event);
 
   const { year, month } = event.queryStringParameters;
@@ -48,7 +50,9 @@ export const handler = async (event) => {
     };
   }
 
-  const email = event.requestContext.authorizer.claims.email;
+  let client = await getDbClient();
+
+  const userId = event.requestContext.authorizer.claims.sub;
   let res;
   try {
     let text = `SELECT
@@ -70,7 +74,7 @@ FROM
     JOIN activity_logs ON activities.id = activity_logs.activity_id
     LEFT JOIN success_logs ON activity_logs.id = success_logs.activity_log_id
 WHERE
-    users.email = $1 AND activity_logs.year = $2 AND activity_logs.month = $3
+    (users.id = $1 OR categories.user_id = $2) AND activity_logs.year = $3 AND activity_logs.month = $4
 GROUP BY
     activity_logs.id,
     activities.id,
@@ -79,7 +83,7 @@ GROUP BY
     categories.color,
     categories.icon,
     activity_logs.target;`;
-    res = await client.query(text, [email, year, month]);
+    res = await client.query(text, [userId, SYSTEM_USER_ID, year, month]);
   } catch (err) {
     console.log("Console logged error --->", err);
     return {
@@ -92,7 +96,7 @@ GROUP BY
   const response = {
     statusCode: 200,
     headers: corsHeaders,
-    body: JSON.stringify(res.rows)
+    body: JSON.stringify(res.rows),
   };
 
   // All log statements are written to CloudWatch

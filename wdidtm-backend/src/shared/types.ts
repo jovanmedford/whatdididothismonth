@@ -31,25 +31,25 @@ export interface Category {
   icon: string;
 }
 
-export type CategoryInput = Omit<Category, "id" | "userId">;
+export type CategoryInput = Omit<Category, "id">;
 
 export interface Activity {
   id: string;
-  catId: string;
+  categoryId: string;
   label: string;
 }
 
-export type ActivityInput = Omit<Activity, "id" | "catId">;
+export type ActivityInput = Omit<Activity, "id">;
 
 export interface ActivityLog {
-  activityLogId: string;
+  activityId: string;
   id: string;
   year: number;
   month: number;
   target: number;
 }
 
-export type ActivityLogInput = Omit<ActivityLog, "id" | "activityLogId">;
+export type ActivityLogInput = Omit<ActivityLog, "id">;
 
 export interface SuccessLog {
   id: string;
@@ -57,10 +57,10 @@ export interface SuccessLog {
   day: number;
 }
 
-export type SuccessLogInput = Omit<SuccessLog, "id" | "activityLogId">;
+export type SuccessLogInput = Omit<SuccessLog, "id">;
 
 export interface Builder {
-  create: (
+  builderCreate: (
     dbClient: Client,
     { label }: { label: string },
     parentId: string
@@ -68,21 +68,29 @@ export interface Builder {
 }
 
 export interface Service<T, U> {
-  create: (
-    dbClient: Client,
-    input: U,
-    parentId: string
-  ) => Promise<Result<T[]>>;
+  create: (input: U) => Promise<Result<T[]>>;
   validateInput: (input: U) => Result;
-  getByUser?: (dbClient: Client, userId: string) => Promise<Result<T[]>>;
-  getByCategory?: (
-    dbClient: Client,
-    categoryId: string
-  ) => Promise<Result<T[]>>;
-  delete?(dbClient: Client, id: string): Promise<Result<string[]>>;
-  delete?(
-    dbClient: Client,
-    input: U,
-    parentId: string
-  ): Promise<Result<string[]>>;
+  findAllByUser?: (userId: string) => Promise<Result<T[]>>;
+  getByCategory?: (categoryId: string) => Promise<Result<T[]>>;
+  delete?(id: string): Promise<Result<string[]>>;
+}
+
+export interface PostTestEventInput {
+  body: null;
+  headers: undefined;
+  multiValueHeaders: undefined;
+  isBase64Encoded: false;
+  path: "";
+  pathParameters: null;
+  queryStringParameters: null;
+  multiValueQueryStringParameters: null;
+  stageVariables: null;
+  requestContext: {
+    authorizer: {
+      claims: {
+        sub: string;
+      };
+    };
+  };
+  resource: "";
 }

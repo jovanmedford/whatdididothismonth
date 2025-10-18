@@ -8,6 +8,7 @@ let client: Client | undefined;
 
 export const handler = async (event: APIGatewayProxyEvent) => {
   client = await getDbClient(client);
+  const activityLogService = new ActivityLogService(client);
 
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -57,7 +58,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
   let failures = [];
 
   for (let id of idList) {
-    let res = await ActivityLogService.delete!(client, id);
+    let res = await activityLogService.delete(id);
     if (!res.ok) {
       failures.push({ id, message: res.message });
       continue;

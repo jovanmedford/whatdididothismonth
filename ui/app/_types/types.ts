@@ -11,8 +11,8 @@ export interface ActivityLog {
 }
 
 export interface Activity {
-  id: string,
-  label: string
+  id: string;
+  label: string;
 }
 
 export interface Category {
@@ -20,4 +20,9 @@ export interface Category {
   label: string;
   color: string;
   icon: string;
+}
+
+export interface InputItem {
+  label: string;
+  value: string;
 }

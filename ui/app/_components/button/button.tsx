@@ -29,8 +29,8 @@ export default function Button({
 }
 
 const iconSize = {
-  small: 16,
-  medium: 16,
+  small: 20,
+  medium: 20,
   large: 20,
 };
 
