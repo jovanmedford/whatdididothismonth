@@ -14,6 +14,8 @@ const getDbClient = createDbClientGetter();
 
 export const handler = async (
   event: APIGatewayProxyEvent,
+  _: any,
+  __: any,
   testClient?: Client
 ) => {
   const corsHeaders = {
@@ -71,6 +73,7 @@ export const handler = async (
   }
 
   const result = await activityLogService.create({
+    userId,
     year: input.year,
     month: input.month,
     target: input.target,
@@ -90,6 +93,6 @@ export const handler = async (
   return {
     statusCode: 200,
     headers: corsHeaders,
-    body: JSON.stringify({ ...data, activityId: data.activity_id }),
+    body: JSON.stringify(data),
   };
 };
