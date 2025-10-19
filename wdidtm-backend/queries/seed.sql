@@ -27,16 +27,16 @@ ON CONFLICT (user_id, label) DO NOTHING;
 
 
 -- === ACTIVITIES ===
-INSERT INTO activities (id, label, cat_id)
+INSERT INTO activities (id, label, user_id, cat_id)
 VALUES
-    ('11111111-aaaa-cccc-aaaa-111111111111', 'Morning Jog', '11111111-aaaa-aaaa-aaaa-111111111111'),
-    ('11111111-bbbb-cccc-bbbb-111111111111', 'Read a Book', '11111111-bbbb-bbbb-bbbb-111111111111'),
+    ('11111111-aaaa-cccc-aaaa-111111111111', 'Morning Jog', '11111111-1111-1111-1111-111111111111', '11111111-aaaa-aaaa-aaaa-111111111111'),
+    ('11111111-bbbb-cccc-bbbb-111111111111', 'Read a Book', '11111111-1111-1111-1111-111111111111', '11111111-bbbb-bbbb-bbbb-111111111111'),
 
-    ('22222222-aaaa-cccc-aaaa-222222222222', 'Lift Weights', '22222222-aaaa-aaaa-aaaa-222222222222'),
-    ('22222222-bbbb-cccc-bbbb-222222222222', 'Track Expenses', '22222222-bbbb-bbbb-bbbb-222222222222'),
+    ('22222222-aaaa-cccc-aaaa-222222222222', 'Lift Weights', '22222222-2222-2222-2222-222222222222', '22222222-aaaa-aaaa-aaaa-222222222222'),
+    ('22222222-bbbb-cccc-bbbb-222222222222', 'Track Expenses', '22222222-2222-2222-2222-222222222222', '22222222-bbbb-bbbb-bbbb-222222222222'),
 
-    ('33333333-aaaa-cccc-aaaa-333333333333', 'Meditate', '33333333-aaaa-aaaa-aaaa-333333333333'),
-    ('33333333-bbbb-cccc-bbbb-333333333333', 'Plan Day', '33333333-bbbb-bbbb-bbbb-333333333333')
+    ('33333333-aaaa-cccc-aaaa-333333333333', 'Meditate', '33333333-3333-3333-3333-333333333333', '33333333-aaaa-aaaa-aaaa-333333333333'),
+    ('33333333-bbbb-cccc-bbbb-333333333333', 'Plan Day', '33333333-3333-3333-3333-333333333333', '33333333-bbbb-bbbb-bbbb-333333333333')
 ON CONFLICT (cat_id, label) DO NOTHING;
 
 

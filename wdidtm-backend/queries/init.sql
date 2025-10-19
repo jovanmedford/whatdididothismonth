@@ -26,7 +26,8 @@ CREATE TABLE
     IF NOT EXISTS activities (
         id UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
         label varchar(255) NOT NULL,
-        cat_id UUID NOT NULL REFERENCES categories (id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        cat_id UUID NOT NULL REFERENCES categories (id) ON DELETE RESTRICT,
         created_at TIMESTAMP DEFAULT NOW (),
         last_updated TIMESTAMP DEFAULT NOW (),
         UNIQUE (cat_id, label)
