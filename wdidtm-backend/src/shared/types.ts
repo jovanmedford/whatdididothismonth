@@ -35,7 +35,8 @@ export type CategoryInput = Omit<Category, "id">;
 
 export interface Activity {
   id: string;
-  categoryId: string;
+  userId: string;
+  catId: string;
   label: string;
 }
 
@@ -43,6 +44,7 @@ export type ActivityInput = Omit<Activity, "id">;
 
 export interface ActivityLog {
   activityId: string;
+  userId: string;
   id: string;
   year: number;
   month: number;
