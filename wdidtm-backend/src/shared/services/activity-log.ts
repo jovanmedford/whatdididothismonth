@@ -1,7 +1,11 @@
 import { Client } from "pg";
-import { ActivityLog, ActivityLogInput, ActivityLogResult, Service } from "../types";
+import {
+  ActivityLog,
+  ActivityLogInput,
+  ActivityLogResult,
+  Service,
+} from "../types";
 import { executeQuery, createInputValidator } from "../utils";
-import { SYSTEM_USER_ID } from "../constants";
 
 export class ActivityLogService
   implements Service<ActivityLog, ActivityLogInput>
@@ -11,7 +15,7 @@ export class ActivityLogService
   async create(input: ActivityLogInput) {
     return await executeQuery<ActivityLog>(
       this.dbClient,
-      `INSERT INTO activity_logs (activity_id, year, month, target) VALUES ($1, $2, $3, $4) RETURNING activity_id, year, month, target;`,
+      `INSERT INTO activity_logs (activity_id, year, month, target) VALUES ($1, $2, $3, $4) RETURNING activity_id AS "activityId", year, month, target;`,
       [input.activityId, input.year, input.month, input.target]
     );
   }
@@ -52,12 +56,12 @@ export class ActivityLogService
     activity_logs.target target
 FROM
     users
-    JOIN categories ON users.id = categories.user_id
-    JOIN activities ON categories.id = activities.cat_id
+    JOIN activities ON users.id = activities.user_id
+    JOIN categories ON activities.cat_id = categories.id
     JOIN activity_logs ON activities.id = activity_logs.activity_id
     LEFT JOIN success_logs ON activity_logs.id = success_logs.activity_log_id
 WHERE
-    (users.id = $1 OR categories.user_id = $2) AND activity_logs.year = $3 AND activity_logs.month = $4
+    activities.user_id = $1 AND activity_logs.year = $2 AND activity_logs.month = $3
 GROUP BY
     activity_logs.id,
     activities.id,
@@ -66,7 +70,7 @@ GROUP BY
     categories.color,
     categories.icon,
     activity_logs.target;`,
-      [userId, SYSTEM_USER_ID, year, month]
+      [userId, year, month]
     );
   }
 
