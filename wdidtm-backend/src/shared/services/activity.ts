@@ -2,7 +2,6 @@ import { ActivityInput, Activity, Service } from "../types";
 import { Client } from "pg";
 import { executeQuery, createInputValidator } from "../utils";
 import CategoryService from "./category";
-import {SYSTEM_USER_ID} from "../constants"
 
 class ActivityService implements Service<Activity, ActivityInput> {
   private categoryService: CategoryService;
@@ -11,10 +10,11 @@ class ActivityService implements Service<Activity, ActivityInput> {
   }
 
   async create(input: ActivityInput) {
-    return await executeQuery<Activity>(this.dbClient, createQuery, [
-      input.categoryId,
-      input.label,
-    ]);
+    return await executeQuery<Activity>(
+      this.dbClient,
+      `INSERT INTO activities (cat_id, label, user_id) VALUES ($1, $2, $3) RETURNING *;`,
+      [input.catId, input.label, input.userId]
+    );
   }
 
   async findOrCreate(input: { label: string; userId: string }) {
@@ -26,7 +26,8 @@ class ActivityService implements Service<Activity, ActivityInput> {
     if (!uncategorizedResult.ok) return uncategorizedResult;
 
     return this.create({
-      categoryId: uncategorizedResult.data[0]!.id,
+      catId: uncategorizedResult.data[0]!.id,
+      userId: input.userId,
       label: input.label,
     });
   }
@@ -43,17 +44,18 @@ class ActivityService implements Service<Activity, ActivityInput> {
     return await executeQuery<Activity>(
       this.dbClient,
       `SELECT activities.id id, activities.label label FROM activities 
-       JOIN categories ON activities.cat_id = categories.id
-       WHERE categories.user_id = $1 OR categories.user_id = $2;`,
-      [userId, SYSTEM_USER_ID]
+       WHERE activities.user_id = $1;`,
+      [userId]
     );
   }
 
   async findByLabel(input: { userId: string; label: string }) {
-    return await executeQuery<Activity>(this.dbClient, findQuery, [
-      input.userId,
-      input.label,
-    ]);
+    return await executeQuery<Activity>(
+      this.dbClient,
+      `SELECT a.id, a.cat_id categoryId, a.label label FROM activities a 
+      WHERE a.user_id = $1 AND LOWER(TRIM(a.label)) = LOWER(TRIM($2));`,
+      [input.userId, input.label]
+    );
   }
 
   async getByCategory(categoryId: string) {
@@ -69,11 +71,5 @@ class ActivityService implements Service<Activity, ActivityInput> {
     return validator(input);
   }
 }
-
-export const findQuery = `SELECT a.id, a.cat_id categoryId, a.label label FROM activities a 
-      JOIN categories c ON c.id = a.cat_id
-      WHERE c.user_id = $1 AND LOWER(TRIM(a.label)) = LOWER(TRIM($2));`;
-
-export const createQuery = `INSERT INTO activities (cat_id, label) VALUES ($1, $2) RETURNING *;`;
 
 export default ActivityService;
